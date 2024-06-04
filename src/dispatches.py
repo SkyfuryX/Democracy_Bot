@@ -30,7 +30,7 @@ data = response.json()
 for item in data:
     item['id'] = str(item['id'])
     item['/id'] = item['id']
-    item['message'] = re.sub('<i=\d>|</i>', '**', item['message'])
+    item['message'] = re.sub('<i=[0-9]>|</i>', '**', item['message'])
 
 #queries for last uploaded id
 for item in container.query_items(
@@ -39,6 +39,9 @@ for item in container.query_items(
     lastid = item
 
 #inserts new items into db
+count = 0
 for item in data:
     if int(item['id']) > int(lastid['id']):
         container.upsert_item(item)
+        count += 1      
+print(str(count) +' Dispatches Recorded')

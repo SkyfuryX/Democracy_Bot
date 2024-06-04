@@ -20,7 +20,7 @@ headers = ast.literal_eval(os.getenv('header1'))
 client = CosmosClient(url=db_uri, credential=db_key)
 database_name = 'democracy_bot'
 database = client.get_database_client(database_name)
-container_name = 'war_status'
+container_name = 'assignments'
 container = database.get_container_client(container_name)
 
 data = {}
@@ -41,6 +41,7 @@ response = session.get("https://api.helldivers2.dev/api/v1/war")
 war_stats = response.json()
 war_stats = war_stats['statistics']
 war_stats = {key: value for key,value in war_stats.items() if key not in ['revives','timePlayed','accuracy',]}
+#new_stats = json.dumps(new_stats, default=lambda o: o.__dict__, sort_keys=True)
 data.update(war_stats)
 
 container.upsert_item(data)
@@ -48,8 +49,8 @@ container.upsert_item(data)
 #test dumping to file
 '''file = open('war_status.txt', 'w')
 file.write(data)
-file.close()
+file.close()'''
 
-with open('war_status.txt', 'w') as file:
+'''with open('war_status.txt', 'w') as file:
     json_string = json.dumps(stats_final, default=lambda o: o.__dict__, sort_keys=True, indent=2)
     file.write(json_string)'''
