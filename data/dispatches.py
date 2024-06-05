@@ -7,8 +7,7 @@ from dotenv import load_dotenv
 from azure.cosmos import CosmosClient
 import re
 
-#load keys
-load_dotenv()
+load_dotenv() #load keys
 db_uri = os.getenv('account_uri')
 db_key = os.getenv('account_key')
 headers = ast.literal_eval(os.getenv('header1'))
@@ -20,28 +19,23 @@ database = client.get_database_client(database_name)
 container_name = 'dispatch'
 container = database.get_container_client(container_name)
 
-#connect to api
-session = requests.Session()
+session = requests.Session() #connect to api
 session.headers.update(headers)
 response = session.get("https://api.helldivers2.dev//api/v1/dispatches")
 data = response.json()
 
-#format for the database
-for item in data:
+for item in data: #format for the database
     item['id'] = str(item['id'])
-    item['/id'] = item['id']
     item['message'] = re.sub('<i=[0-9]>|</i>', '**', item['message'])
 
-#queries for last uploaded id
-for item in container.query_items(
-        query='SELECT c.id as id FROM dispatch c ORDER BY c.id DESC OFFSET 0 LIMIT 1',
+for item in container.query_items( #queries for last uploaded id
+        query='SELECT d.id as id FROM dispatch d ORDER BY d.id DESC OFFSET 0 LIMIT 1',
         enable_cross_partition_query=True):
     lastid = item
 
-#inserts new items into db
 count = 0
-for item in data:
+for item in data: #inserts new items into db
     if int(item['id']) > int(lastid['id']):
         container.upsert_item(item)
         count += 1      
-print(str(count) +' Dispatches Recorded')
+print(str(count) + ' Records Updated')

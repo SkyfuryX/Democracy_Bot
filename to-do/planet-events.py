@@ -20,7 +20,7 @@ headers = ast.literal_eval(os.getenv('header1'))
 client = CosmosClient(url=db_uri, credential=db_key)
 database_name = 'democracy_bot'
 database = client.get_database_client(database_name)
-container_name = 'war_status'
+container_name = 'planet_events'
 container = database.get_container_client(container_name)
 
 data = {}

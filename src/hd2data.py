@@ -1,5 +1,6 @@
 import requests
 import json
+import re
 from datetime import datetime
 import os
 import ast
@@ -28,6 +29,7 @@ data = {}
 for item in container.query_items(
         query='SELECT c.id as id FROM war_status c ORDER BY c.id DESC OFFSET 0 LIMIT 1',
         enable_cross_partition_query=True):
+    id1 = item['id']
     data.update(item)
 
 #formats data to table schema
@@ -36,7 +38,7 @@ data['/date'] = dt_formatted
 
 session = requests.Session()
 session.headers.update(headers)
-response = session.get("https://api.helldivers2.dev/api/v1/war")
+response = session.get("https://api.helldivers2.dev/api/v1/war") #Overall War data
 
 war_stats = response.json()
 war_stats = war_stats['statistics']
@@ -44,6 +46,30 @@ war_stats = {key: value for key,value in war_stats.items() if key not in ['reviv
 data.update(war_stats)
 
 container.upsert_item(data)
+print('1 War Update Recorded')
+
+response = session.get("https://api.helldivers2.dev//api/v1/dispatches") #Dispatch Data
+data = response.json()
+
+#format for the database
+for item in data:
+    item['id'] = str(item['id'])
+    item['/id'] = item['id']
+    item['message'] = re.sub('<i=[0-9]>|</i>', '**', item['message'])
+
+#queries for last uploaded id
+for item in container.query_items(
+        query='SELECT c.id as id FROM dispatch c ORDER BY c.id DESC OFFSET 0 LIMIT 1',
+        enable_cross_partition_query=True):
+    lastid = item
+
+#inserts new items into db
+count = 0
+for item in data: #inserts new items into db
+    if int(item['id']) > int(lastid['id']):
+        container.upsert_item(item)
+        count += 1      
+print(count+' Records Updated')
 
 #test dumping to file
 '''file = open('war_status.txt', 'w')

@@ -20,7 +20,7 @@ headers = ast.literal_eval(os.getenv('header1'))
 client = CosmosClient(url=db_uri, credential=db_key)
 database_name = 'democracy_bot'
 database = client.get_database_client(database_name)
-container_name = 'planets'
+container_name = 'war_status'
 container = database.get_container_client(container_name)
 
 data = {}
@@ -28,11 +28,12 @@ data = {}
 for item in container.query_items(
         query='SELECT c.id as id FROM war_status c ORDER BY c.id DESC OFFSET 0 LIMIT 1',
         enable_cross_partition_query=True):
+    id1 = item['id']
     data.update(item)
 
 #formats data to table schema
 data['id'] = str(int(data['id']) + 1)
-data['/date'] = dt_formatted
+data['date'] = dt_formatted
 
 session = requests.Session()
 session.headers.update(headers)
@@ -41,16 +42,17 @@ response = session.get("https://api.helldivers2.dev/api/v1/war")
 war_stats = response.json()
 war_stats = war_stats['statistics']
 war_stats = {key: value for key,value in war_stats.items() if key not in ['revives','timePlayed','accuracy',]}
-#new_stats = json.dumps(new_stats, default=lambda o: o.__dict__, sort_keys=True)
 data.update(war_stats)
 
-#container.upsert_item(data)
+dbresponse = container.upsert_item(data)
+if int(item['id']) > int(id1['id']):
+    print('1 War Update Recorded')
 
-#test dump to file
-'''file = open('planets.txt', 'w')
+#test dumping to file
+'''file = open('war_status.txt', 'w')
 file.write(data)
-file.close()'''
+file.close()
 
-with open('planets.txt', 'w') as file:
+with open('war_status.txt', 'w') as file:
     json_string = json.dumps(stats_final, default=lambda o: o.__dict__, sort_keys=True, indent=2)
-    file.write(json_string)
+    file.write(json_string)'''
