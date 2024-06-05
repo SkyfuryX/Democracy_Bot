@@ -1,4 +1,5 @@
-import os, re, random, math, discord, bot_func as bf
+import bot_func as bf
+import os, re, random, math, discord
 from discord.ext import commands
 from dateutil.relativedelta import relativedelta
 from datetime import datetime as dt, timezone, timedelta, tzinfo
@@ -59,30 +60,12 @@ async def on_message(message):
         
 @bot.tree.command(name='war',description='Show the stats of the current Galactic War') #shows info on the galatic war in general
 async def war(interaction: discord.Interaction):
-    container = database.get_container_client('war_status')
-    for item in container.query_items(
-        query='SELECT * FROM war_status w ORDER BY w.id DESC OFFSET 0 LIMIT 1',
-        enable_cross_partition_query=True):
-        war = item 
-    msg = ('**--Galactic War Stats--**\nHelldivers Active: '+ bf.commas(war['playerCount']) +'\nHelldivers KIA: ' + bf.commas(war['deaths']) + 
-           '\nAutomatons Killed: '+ bf.commas(war['automatonKills']) +'\nTerminids Killed: '+ bf.commas(war['terminidKills']) +
-           '\nIlluminate Killed: '+ bf.commas(war['illuminateKills']) +'\nBullets Fired: ' + bf.commas(war['bulletsFired']))     
+    msg = bf.war()    
     await interaction.channel.send(msg)
-
 
 @bot.tree.command(name='orders',description='Returns the current Major Order') #shows info on the current Major Order in general
 async def orders(interaction: discord.Interaction):
-    container = database.get_container_client('major_orders')
-    for item in container.query_items(
-        query='SELECT o.briefing, o.description, o.expiration FROM major_orders o ORDER BY o.id DESC OFFSET 0 LIMIT 1',
-        enable_cross_partition_query=True):
-        order = item
-    now = dt.now(timezone.utc) + timedelta(hours=4)
-    timeleft = dt.strptime(order['expiration'], '%Y-%m-%d %H:%M:%S').astimezone(timezone.utc) - now 
-    hoursleft = math.floor(timeleft.seconds/3600)
-    minsleft =  math.floor((timeleft.seconds/3600-hoursleft)*60)
-    msg = ('**--MAJOR ORDER--**\n'+ order['briefing']+'\n'+order['description']+
-           '\nTime Remaining: '+str(timeleft.days)+' days '+str(hoursleft)+' hours '+str(minsleft)+' minutes.') 
+    msg = bf.orders() 
     await interaction.channel.send(msg)
 
 
