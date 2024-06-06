@@ -68,26 +68,25 @@ async def orders(interaction: discord.Interaction):
     msg = bf.orders() 
     await interaction.channel.send(msg)
 
-
 @bot.tree.command(name='dispatch', description='Returns most recent dispatch message from Super Earth.')
 async def dispatch(interaction: discord.Interaction, number: int = 1):
     #displays latest dispatch messages
     container = database.get_container_client('dispatch')
     msg = 'Latest message(s) from Super Earth:'
     for item in container.query_items(
-        query='SELECT d.published, d.message FROM dispatch d ORDER BY d.id DESC OFFSET 0 LIMIT ' + str(number),
+        query='SELECT d.published, d.message FROM dispatch d ORDER BY d.id DESC OFFSET 0 LIMIT 1', 
         enable_cross_partition_query=True):
-        msg += '\n\nDate: ' + item['published'][0:10]  + '\n' + item['message']
+        msg += '\n\nDate: ' + str(dt.strptime(item['published'][0:10], '%Y-%m-%d') + relativedelta(years=160))[0:10] + '\n' + item['message'] #adds 160 years to date to make message more thematic
     if number <= 3:
         await interaction.channel.send(msg)
     elif number >= 4:
         await interaction.user.send(msg)
             
         
-@bot.tree.command(name='planets',description='In Progress')
-async def planets(interaction: discord.Interaction,arg: str):
-    #gathers liberation info on a specific planet
-    await interaction.channel.send(arg)
+@bot.tree.command(name='planets',description='Displays information on a specific planet')#gathers liberation info and stats on a specific planet
+async def planets(interaction: discord.Interaction, name: str):
+    msg = bf.planet(name)
+    await interaction.channel.send(msg)
 
 @bot.tree.command(name='weapons',description='In Progress') #show information on weapons
 async def weapons(interaction: discord.Interaction,weapon: str):

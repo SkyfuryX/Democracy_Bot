@@ -1,7 +1,8 @@
 import os, re, random, math, discord
 from discord.ext import commands
 from dateutil.relativedelta import relativedelta
-from datetime import datetime as dt, timezone, timedelta, tzinfo
+from datetime import datetime as dt, timezone, timedelta
+from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
 from azure.cosmos import CosmosClient
 
@@ -62,8 +63,34 @@ def orders():
         for item in container.query_items(query='SELECT p.name, p.currentOwner, p.maxHealth, p.health FROM planets p WHERE p.index IN ('+', '.join(planetIDs)+')',
             enable_cross_partition_query=True):
             if item['currentOwner'] == 'Humans' and (item['health']/item['maxHealth']) == 1:
-                msg += '\n\t'+ item['name'] + ' - 100% Liberated'
+                msg += '\n>'+ item['name'] + ' - 100% Liberated'
             else:
-                msg += '\n\t'+ item['name'] + ' - ' + str(abs(round((item['health']/item['maxHealth'] -1)*100, 4))) + '% Liberated'
+                msg += '\n>'+ item['name'] + ' - ' + str(abs(round((item['health']/item['maxHealth'] -1)*100, 4))) + '% Liberated'
         msg += ('\nTime Remaining: ' + str(timeleft.days) + ' days ' + str(hoursleft) + ' hours ' + str(minsleft) + ' minutes')
         return msg
+    
+def planet(name):
+    container = database.get_container_client('planets')    
+    for item in container.query_items(query='SELECT * FROM planets p WHERE p.name = "'+name.upper()+'"',
+            enable_cross_partition_query=True): 
+        if item['currentOwner'] == 'Humans':
+            item['currentOwner'] = 'Super Earth'
+        stats = item['statistics']
+        stats['enemiesKilled'] = stats['illuminateKills']+stats['automatonKills']+stats['terminidKills']
+        msg = '**--'+item['name']+'--** \n'+item['currentOwner']+' Control'
+        if item['currentOwner'] == 'Super Earth' and (item['health']/item['maxHealth']) == 1 and item['event'] == None:
+            msg += '\n100% Liberated'
+        elif item['currentOwner'] == 'Super Earth' and (item['health']/item['maxHealth']) == 1 and item['event'] == True:
+            event = item['event']
+            msg += '\n'+str(abs(round((event['health']/event['maxHealth'] -1)*100, 4))) + '% Defended'
+        else:
+            msg += '\n'+str(abs(round((item['health']/item['maxHealth'] -1)*100, 4))) + '% Liberated'
+        msg += ('\n---\nHelldivers Active: '+ commas(stats['playerCount']) +'\nEnemies Killed: '+commas(stats['enemiesKilled'])+
+                '\nHelldivers KIA: ' + commas(stats['deaths']) + '\nBullets Fired: '+commas(stats['bulletsFired']))
+        return msg
+    msg = 'Planet not found.'
+    return msg
+            
+  
+def campaigns():      
+    pass
