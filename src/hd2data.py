@@ -1,81 +1,110 @@
-import requests
-import json
-import re
-from datetime import datetime
-import os
-import ast
-from azure.cosmos import CosmosClient
+import os, re, schedule, requests, time, ast
+from discord.ext import commands
+from dateutil.relativedelta import relativedelta
+from datetime import datetime as dt, timezone, timedelta, tzinfo
 from dotenv import load_dotenv
+from azure.cosmos import CosmosClient
 
 #https://helldivers-2.github.io/api/docs/openapi/swagger-ui.html
 
-now = datetime.now()
+data = {}
+now = dt.now()
 dt_string = now.strftime("%m%d%Y%H%M%S")
 dt_formatted = now.strftime("%m-%d-%Y- %H:%M:%S")
 
 load_dotenv()
+session = requests.Session()
+headers = ast.literal_eval(os.getenv('header1'))
+session.headers.update(headers)
+
 db_uri = os.getenv('account_uri')
 db_key = os.getenv('account_key')
-headers = ast.literal_eval(os.getenv('header1'))
-
 client = CosmosClient(url=db_uri, credential=db_key)
 database_name = 'democracy_bot'
 database = client.get_database_client(database_name)
-container_name = 'war_status'
-container = database.get_container_client(container_name)
 
-data = {}
-#gets only the highest ID for db key since the data doesnt have one itself
-for item in container.query_items(
-        query='SELECT c.id as id FROM war_status c ORDER BY c.id DESC OFFSET 0 LIMIT 1',
+# WAR DATA
+def war_data():
+    #gets only the highest ID for db key since the data doesnt have one itself
+    container = database.get_container_client('war_status')
+    for item in container.query_items(
+            query='SELECT c.id as id FROM war_status c ORDER BY c.id DESC OFFSET 0 LIMIT 1',
+            enable_cross_partition_query=True):
+        id1 = item['id']
+        data.update(item)
+        
+    #formats data to table schema
+    data['id'] = str(int(data['id']) + 1)
+    data['date'] = dt_formatted    
+
+    response = session.get("https://api.helldivers2.dev/api/v1/war") #Overall War data
+    war_stats = response.json()
+    war_stats = war_stats['statistics']
+    war_stats = {key: value for key,value in war_stats.items() if key not in ['revives','timePlayed','accuracy',]}
+    data.update(war_stats)
+
+    container.upsert_item(data)
+    print('1 War Update Recorded')
+
+#DISPATCH DATA
+def dispatch_data():
+    container = database.get_container_client('dispatch')
+    response = session.get("https://api.helldivers2.dev//api/v1/dispatches") 
+    data = response.json()
+
+    #format for the database
+    for item in data:
+        item['id'] = str(item['id'])
+        item['message'] = re.sub('<i=[0-9]>|</i>', '**', item['message'])
+
+    #queries for last uploaded id
+    for item in container.query_items( #queries for last uploaded id
+        query='SELECT d.id as id FROM dispatch d ORDER BY d.id DESC OFFSET 0 LIMIT 1',
         enable_cross_partition_query=True):
-    id1 = item['id']
-    data.update(item)
+        id = int(item['id'])
 
-#formats data to table schema
-data['id'] = str(int(data['id']) + 1)
-data['/date'] = dt_formatted
+    count = 0
+    for item in data: #inserts new items into db
+        if int(item['id']) > id:
+            container.upsert_item(item)
+            count += 1      
+    print(str(count) + 'New Dispatches Recorded')
+    
+#PLANET DATA
+def planet_data():
+    container = database.get_container_client('planets')
+    response = session.get("https://api.helldivers2.dev/api/v1/planets")
+    data = response.json()
 
-session = requests.Session()
-session.headers.update(headers)
-response = session.get("https://api.helldivers2.dev/api/v1/war") #Overall War data
-
-war_stats = response.json()
-war_stats = war_stats['statistics']
-war_stats = {key: value for key,value in war_stats.items() if key not in ['revives','timePlayed','accuracy',]}
-data.update(war_stats)
-
-container.upsert_item(data)
-print('1 War Update Recorded')
-
-response = session.get("https://api.helldivers2.dev//api/v1/dispatches") #Dispatch Data
-data = response.json()
-
-#format for the database
-for item in data:
-    item['id'] = str(item['id'])
-    item['/id'] = item['id']
-    item['message'] = re.sub('<i=[0-9]>|</i>', '**', item['message'])
-
-#queries for last uploaded id
-for item in container.query_items(
-        query='SELECT c.id as id FROM dispatch c ORDER BY c.id DESC OFFSET 0 LIMIT 1',
-        enable_cross_partition_query=True):
-    lastid = item
-
-#inserts new items into db
-count = 0
-for item in data: #inserts new items into db
-    if int(item['id']) > int(lastid['id']):
+    count = 0
+    for item in data: #inserts new items into db
+        item['id'] = str(item['index'])
         container.upsert_item(item)
         count += 1      
-print(count+' Records Updated')
+    print(str(count) + ' Planets Updated') 
 
-#test dumping to file
-'''file = open('war_status.txt', 'w')
-file.write(data)
-file.close()
-
-with open('war_status.txt', 'w') as file:
-    json_string = json.dumps(stats_final, default=lambda o: o.__dict__, sort_keys=True, indent=2)
-    file.write(json_string)'''
+#ORDERS DATA
+def orders_data():
+    response = session.get("https://api.helldivers2.dev/api/v1/assignments")
+    data = response.json()
+    
+    container = database.get_container_client('major_orders')
+    count = 0
+    for item in data: #inserts new items into db
+        item['id'] = str(item['id'])
+        item['expiration'] = item['expiration'][0:10] + ' ' + item['expiration'][11:19]
+        count += 1 
+        container.upsert_item(item)
+    print(str(count) + ' Orders Updated')
+        
+def data_upload():
+    war_data()
+    dispatch_data()
+    planet_data()
+    orders_data()
+    
+schedule.every(15).minutes.do(data_upload)
+    
+while True:
+    schedule.run_pending()
+    time.sleep(1)

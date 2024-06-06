@@ -31,11 +31,11 @@ for item in data: #format for the database
 for item in container.query_items( #queries for last uploaded id
         query='SELECT d.id as id FROM dispatch d ORDER BY d.id DESC OFFSET 0 LIMIT 1',
         enable_cross_partition_query=True):
-    lastid = item
+    id = int(item['id'])
 
 count = 0
 for item in data: #inserts new items into db
-    if int(item['id']) > int(lastid['id']):
+    if int(item['id']) > id:
         container.upsert_item(item)
         count += 1      
 print(str(count) + ' Records Updated')
