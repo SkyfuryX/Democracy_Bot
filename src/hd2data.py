@@ -28,13 +28,12 @@ def war_data():
     #gets only the highest ID for db key since the data doesnt have one itself
     container = database.get_container_client('war_status')
     for item in container.query_items(
-            query='SELECT c.id as id FROM war_status c ORDER BY c.id DESC OFFSET 0 LIMIT 1',
+            query='SELECT StringToNumber(c.id) as idint FROM c ORDER BY c.idint DESC OFFSET 0 LIMIT 1',
             enable_cross_partition_query=True):
-        id1 = item['id']
-        data.update(item)
+        id = item['idint']
         
     #formats data to table schema
-    data['id'] = str(int(data['id']) + 1)
+    data['id'] = str(id + 1)
     data['date'] = dt_formatted    
 
     response = session.get("https://api.helldivers2.dev/api/v1/war") #Overall War data
@@ -52,11 +51,6 @@ def dispatch_data():
     response = session.get("https://api.helldivers2.dev//api/v1/dispatches") 
     data = response.json()
 
-    #format for the database
-    for item in data:
-        item['id'] = str(item['id'])
-        item['message'] = re.sub('<i=[0-9]>|</i>', '**', item['message'])
-
     #queries for last uploaded id
     for item in container.query_items( #queries for last uploaded id
         query='SELECT d.id as id FROM dispatch d ORDER BY d.id DESC OFFSET 0 LIMIT 1',
@@ -65,11 +59,13 @@ def dispatch_data():
 
     count = 0
     for item in data: #inserts new items into db
-        if int(item['id']) > id:
+        if item['id'] > id:
+            item['id'] = str(item['id'])
+            item['message'] = re.sub('<i=[0-9]>|</i>', '**', item['message'])
             container.upsert_item(item)
-            count += 1      
-    print(str(count) + 'New Dispatches Recorded')
-    
+            count += 1     
+    print(str(count) + ' New Dispatches Recorded')
+
 #PLANET DATA
 def planet_data():
     container = database.get_container_client('planets')
@@ -96,14 +92,37 @@ def orders_data():
         count += 1 
         container.upsert_item(item)
     print(str(count) + ' Orders Updated')
+    
+def campaign_data():
+    response = session.get("https://api.helldivers2.dev//api/v1/campaigns")
+    data = response.json()
+    campIDs = []
+    for item in data:
+        campIDs.append(str(item['id']))
+    count = 0
+    container = database.get_container_client('campaigns')
+    for item in container.query_items(query='SELECT * FROM campaigns c WHERE c.id NOT IN ("'+'", "'.join(campIDs)+'")',
+        enable_cross_partition_query=True): #query to find and delete the items no longer in current campaign info
+        container.delete_item(item, partition_key=item['name']) 
+        count += 1
+    cmpmsg = str(count) + ' Campaigns Deleted, '       
+    count = 0
+    for item in data:
+        item['id'] = str(item['id'])
+        item['name'] = item['planet']['name']
+        count += 1
+        container.upsert_item(item)
+    print(cmpmsg + str(count) + ' Campaigns Updated')        
         
 def data_upload():
     war_data()
     dispatch_data()
     planet_data()
     orders_data()
-    
-schedule.every(15).minutes.do(data_upload)
+    campaign_data()
+    print('Data update completed at '+str(dt.now()))
+        
+schedule.every(20).minutes.do(data_upload)
     
 while True:
     schedule.run_pending()

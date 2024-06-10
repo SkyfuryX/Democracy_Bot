@@ -63,9 +63,9 @@ def orders():
         for item in container.query_items(query='SELECT p.name, p.currentOwner, p.maxHealth, p.health FROM planets p WHERE p.index IN ('+', '.join(planetIDs)+')',
             enable_cross_partition_query=True):
             if item['currentOwner'] == 'Humans' and (item['health']/item['maxHealth']) == 1:
-                msg += '\n>'+ item['name'] + ' - 100% Liberated'
+                msg += '\n> '+ item['name'] + ' - 100% Liberated'
             else:
-                msg += '\n>'+ item['name'] + ' - ' + str(abs(round((item['health']/item['maxHealth'] -1)*100, 4))) + '% Liberated'
+                msg += '\n> '+ item['name'] + ' - ' + str(abs(round((item['health']/item['maxHealth'] -1)*100, 4))) + '% Liberated'
         msg += ('\nTime Remaining: ' + str(timeleft.days) + ' days ' + str(hoursleft) + ' hours ' + str(minsleft) + ' minutes')
         return msg
     
@@ -85,12 +85,38 @@ def planet(name):
             msg += '\n'+str(abs(round((event['health']/event['maxHealth'] -1)*100, 4))) + '% Defended'
         else:
             msg += '\n'+str(abs(round((item['health']/item['maxHealth'] -1)*100, 4))) + '% Liberated'
-        msg += ('\n---\nHelldivers Active: '+ commas(stats['playerCount']) +'\nEnemies Killed: '+commas(stats['enemiesKilled'])+
+        msg += ('\n------------------\nHelldivers Active: '+ commas(stats['playerCount']) +'\nEnemies Killed: '+commas(stats['enemiesKilled'])+
                 '\nHelldivers KIA: ' + commas(stats['deaths']) + '\nBullets Fired: '+commas(stats['bulletsFired']))
         return msg
-    msg = 'Planet not found.'
+    msg = '-Planet not found-'
     return msg
             
   
 def campaigns():      
-    pass
+    container = database.get_container_client('campaigns')
+    msg = '**--Active Campaigns--**'
+    defense = '\n-Defense Campaigns- \n|'
+    autofrnt = '\n-Automaton Front-\n|'
+    bugfrnt = '\n-Terminid Front-\n|'
+    illufrnt = '\n-Illuminate Front-\n|' # in preparation for Illuminate to be in-game
+    for item in container.query_items(query='SELECT * FROM campaigns c',
+            enable_cross_partition_query=True):
+        if item['planet']['currentOwner'] == 'Humans' and item['planet']['event'] == True:
+            defense += ' ' + item['planet']['name'] + ' ' + str(abs(round((item['planet']['event']['health']/item['planet']['event']['maxHealth'] -1)*100, 4))) + '% |'
+        elif item['planet']['currentOwner'] == 'Automaton':
+            autofrnt += ' '+ item['planet']['name'] + ' ' + str(abs(round((item['planet']['health']/item['planet']['maxHealth'] -1)*100, 4))) + '% |'
+        elif item['planet']['currentOwner'] == 'Terminids':
+            bugfrnt += ' '+ item['planet']['name'] + ' ' + str(abs(round((item['planet']['health']/item['planet']['maxHealth'] -1)*100, 4))) + '% |'
+        elif item['planet']['currentOwner'] == 'Illuminate':
+            illufrnt += ' '+ item['planet']['name'] + ' ' + str(abs(round((item['planet']['health']/item['planet']['maxHealth'] -1)*100, 4))) + '% |'
+    if len(autofrnt) > 20:
+        msg += autofrnt
+    if len(bugfrnt) > 19:
+        msg += bugfrnt    
+    if len(illufrnt) > 21:
+        msg += illufrnt    
+    if len(defense) > 23:
+        msg += defense
+    return msg
+            
+            

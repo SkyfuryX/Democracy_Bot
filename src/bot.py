@@ -23,7 +23,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 descrip = '''A discord bot to view on-demand statistics from the game Helldrivers 2: Includes planet info, 
 Major Orders, dispatches from Super Earth, and more.'''
-bot = commands.Bot(command_prefix='/', description=descrip, intents=intents)
+bot = commands.Bot(command_prefix='!', description=descrip, intents=intents)
 tree = discord.app_commands.CommandTree
 
 inspiration = open('liberty.txt', 'r').readlines()
@@ -31,7 +31,7 @@ inspiration = open('liberty.txt', 'r').readlines()
 @bot.event
 async def on_ready():
     await bot.tree.sync()
-    await bot.change_presence(activity=discord.CustomActivity(name='Spreading managed Democracy'))
+    await bot.change_presence(activity=discord.CustomActivity(name='Spreading Managed Democracy'))
     print('Logged on as', bot.user)
 
 message_time = {}
@@ -81,19 +81,30 @@ async def dispatch(interaction: discord.Interaction, number: int = 1):
         await interaction.channel.send(msg)
     elif number >= 4:
         await interaction.user.send(msg)
-            
-        
+                   
 @bot.tree.command(name='planets',description='Displays information on a specific planet')#gathers liberation info and stats on a specific planet
 async def planets(interaction: discord.Interaction, name: str):
     msg = bf.planet(name)
     await interaction.channel.send(msg)
+    
+@bot.tree.command(name='campaigns',description='Show the current active Libration and Defense campaigns.') 
+async def campaigns(interaction: discord.Interaction): 
+    msg = bf.campaigns()  
+    await interaction.channel.send(msg)
 
 @bot.tree.command(name='weapons',description='In Progress') #show information on weapons
 async def weapons(interaction: discord.Interaction,weapon: str):
-    pass
+    msg = 'Work in progress'  
+    await interaction.channel.send(msg)
 
 @bot.tree.command(name='stratgems',description='In Progress') #show info on requested stratgems
 async def strategems(interaction: discord.Interaction,strat: str):
-    pass
+    msg = 'Work in progress'  
+    await interaction.channel.send(msg)
+    
+@bot.command()
+async def shutdown(ctx):
+    if ctx.author.id == 157695574580264960: 
+        await bot.close()
 
 bot.run(token) #starts bot and begins listening for events and commands
