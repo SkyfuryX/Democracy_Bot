@@ -4,7 +4,6 @@ from dateutil.relativedelta import relativedelta
 from datetime import datetime as dt, timezone, timedelta
 from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
-#from azure.cosmos import CosmosClient
 from azure.cosmos.aio import CosmosClient
 
 load_dotenv()
@@ -15,7 +14,6 @@ async def db_query(cont_name, db_query):
     async with CosmosClient(url=db_uri, credential=db_key) as client:
         database =  client.get_database_client('democracy_bot')
         container = database.get_container_client(cont_name)
-        #results =  await container.query_items(query=db_query)
         results = [item async for item in container.query_items(query=db_query)]
         return results
 
@@ -47,13 +45,16 @@ async def war():
     return msg
 
 async def orders():
-    query='SELECT o.title, o.briefing, o.description, o.expiration, o.tasks, o.progress FROM major_orders o ORDER BY o.id DESC OFFSET 0 LIMIT 1'
+    query='SELECT o.title, o.briefing, o.description, o.expiration, o.tasks, o.progress FROM major_orders o ORDER BY o.expiration DESC OFFSET 0 LIMIT 1'
     results = await db_query('major_orders', query)
     for item in results:
         order = item
     msg = ('**--' + order['title'] + '--**\n' + order['briefing'] + '\n'+order['description'])
     now = dt.now(timezone.utc) + timedelta(hours=4)
     timeleft = dt.strptime(order['expiration'], '%Y-%m-%d %H:%M:%S').astimezone(timezone.utc) - now #find time remaining for objective
+    if timeleft.days < 0:
+        msg = '-Awaiting Orders from Super Earth-'
+        return msg
     hoursleft = math.floor(timeleft.seconds/3600)
     minsleft =  math.floor((timeleft.seconds/3600-hoursleft)*60)
     planetIDs = []
@@ -87,6 +88,11 @@ async def planet(name):
             msg += '\n'+str(abs(round((event['health']/event['maxHealth'] -1)*100, 4))) + '% Defended'
         else:
             msg += '\n'+str(abs(round((item['health']/item['maxHealth'] -1)*100, 4))) + '% Liberated'
+        msg += '\nBiome and Hazards: ' + item['biome']['name'] + ' - '
+        if len(item['hazards']) > 1:
+            msg += item['hazards'][0]['name'] + ', '+ item['hazards'][1]['name']
+        else:
+            msg += item['hazards'][0]['name']
         msg += ('\n------------------\nHelldivers Active: '+ await commas(stats['playerCount']) +'\nEnemies Killed: '+ await commas(stats['enemiesKilled'])+
                 '\nHelldivers KIA: ' + await commas(stats['deaths']) + '\nBullets Fired: '+ await commas(stats['bulletsFired']))
         return msg
@@ -120,4 +126,19 @@ async def campaigns():
         msg += defense
     return msg
             
-            
+async def stratagems(name):
+    emojikeys = {'up': ':arrow_up:','down':':arrow_down:','left':':arrow_left:','right':':arrow_right:'}
+    query = 'SELECT * FROM stratagems s WHERE CONTAINS(s.name, "'+name+'", true)'
+    results = await db_query('stratagems', query)
+    if results == None:
+        msg = '-Stratagem Not Found-'
+        return msg
+    else:
+        msg = '**--Stratagem Info--**'
+        for item in results:
+            if item['codename'] != None:
+                msg += '\n'+ item['codename']
+            msg += '\n'+ item['name'] + '\n> Call-in Time: ' + str(item['activation']) + ' sec\n> Uses: ' + item['uses'] + '\n> Cooldown Time: '+ str(item['cooldown']) + ' sec\n> Keys: '
+            for key in item['keys']:
+                msg += emojikeys[key]
+        return msg

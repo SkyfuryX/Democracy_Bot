@@ -21,7 +21,7 @@ database = client.get_database_client('democracy_bot')'''
 intents = discord.Intents.default()
 intents.message_content = True
 descrip = '''A discord bot to view on-demand statistics from the game Helldrivers 2: Includes planet info, 
-Major Orders, dispatches from Super Earth, and more.'''
+Major Orders, dispatches from Super Earth, and more.\n!help for commands list\n!report to report issues or request new features '''
 bot = commands.Bot(command_prefix='!', description=descrip, intents=intents)
 
 @bot.event
@@ -50,17 +50,17 @@ async def on_message(message):
                 i = random.randint(1,len(inspiration))
                 await message.channel.send(inspiration[i-1][0:-1])
         
-@bot.tree.command(name='war',description='Show the stats of the current Galactic War') #shows info on the galatic war in general
+@bot.tree.command(name='war',description='Display the stats of the current Galactic War') #shows info on the galatic war in general
 async def war(interaction: discord.Interaction):
     msg = await bf.war()   
     await interaction.response.send_message(msg)
 
-@bot.tree.command(name='orders',description='Returns the current Major Order') #shows info on the current Major Order in general
+@bot.tree.command(name='orders',description='Displays the current Major Order') #shows info on the current Major Order in general
 async def orders(interaction: discord.Interaction):
     msg = await bf.orders()
     await interaction.response.send_message(msg)
 
-@bot.tree.command(name='dispatch', description='Returns most recent dispatch message from Super Earth.')
+@bot.tree.command(name='dispatch', description='Displays the [number] most recent dispatch message(s) from Super Earth. Defaults to 1')
 async def dispatch(interaction: discord.Interaction, number: int = 1):
     #displays latest dispatch messages
     query='SELECT d.published, d.message FROM dispatch d ORDER BY d.id DESC OFFSET 0 LIMIT 1'
@@ -79,7 +79,7 @@ async def planets(interaction: discord.Interaction, name: str):
     msg = await bf.planet(name)
     await interaction.response.send_message(msg)
     
-@bot.tree.command(name='campaigns',description='Show the current active Libration and Defense campaigns.') 
+@bot.tree.command(name='campaigns',description='Displays the currently active Liberation and Defense campaigns.') 
 async def campaigns(interaction: discord.Interaction): 
     msg = await bf.campaigns()
     await interaction.response.send_message(msg)
@@ -89,14 +89,18 @@ async def weapons(interaction: discord.Interaction,weapon: str):
     msg = 'Work in progress'  
     await interaction.response.send_message(msg)
 
-@bot.tree.command(name='stratgems',description='In Progress') #show info on requested stratgems
-async def strategems(interaction: discord.Interaction,strat: str):
-    msg = 'Work in progress'  
+@bot.tree.command(name='stratagems',description='Displays information for any stratagems containing the name included') #show info on requested stratgems
+async def strategems(interaction: discord.Interaction,name: str):
+    msg = await bf.stratagems(name)
     await interaction.response.send_message(msg)
     
 @bot.command()
 async def shutdown(ctx):
     if ctx.author.id == 157695574580264960: 
-        await bot.close()    
+        await bot.close()  
+        
+@bot.command()      
+async def report(ctx):
+    await ctx.user.send('Please submit bug reports and feature requests in the form below:\nhttps://forms.gle/mAPt9wcj4qeaT2g26\n\nThank you for your service, Helldiver!')    
     
 bot.run(token) #starts bot and begins listening for events and commands

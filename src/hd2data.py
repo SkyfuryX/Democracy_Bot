@@ -115,6 +115,7 @@ def campaign_data():
     print(cmpmsg + str(count) + ' Campaigns Updated')        
         
 def data_upload():
+    print('Data update started at '+str(dt.now()))
     war_data()
     dispatch_data()
     planet_data()
@@ -122,7 +123,7 @@ def data_upload():
     campaign_data()
     print('Data update completed at '+str(dt.now()))
         
-schedule.every(20).minutes.do(data_upload)
+schedule.every(30).minutes.do(data_upload)
     
 while True:
     schedule.run_pending()

@@ -1,4 +1,4 @@
-import requests
+import requests, json
 from datetime import datetime
 import os
 import ast
@@ -24,12 +24,12 @@ container = database.get_container_client('planets')
 count =0
 for item in data: #inserts new items into db
     item['id'] = str(item['index'])
-    container.upsert_item(item)
-    count += 1      
-print(str(count) + ' Records Updated') 
-
-'''with open('planets.txt', 'w') as file:
-    json_string = json.dumps(data, default=lambda o: o.__dict__, sort_keys=True, indent=2)
+    #container.upsert_item(item)
+    
+planet_list = {data['index']:data['name'] for data['index'],data['name'] in data}
+    
+with open('planetlist.txt', 'w') as file:
+    json_string = json.dumps(planet_list, default=lambda o: o.__dict__, sort_keys=True, indent=2)
     file.write(json_string)
-    file.close()'''
+    file.close()
 
