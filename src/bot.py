@@ -12,11 +12,6 @@ token = os.getenv('bot_token')
 inspiration = open('liberty.txt', 'r').readlines()
 message_time = {}
 
-#initialize db connection
-'''client = CosmosClient(url=db_uri, credential=db_key)
-database_name = 'democracy_bot'
-database = client.get_database_client('democracy_bot')'''
-
 #initiate bot
 intents = discord.Intents.default()
 intents.message_content = True
@@ -90,7 +85,7 @@ async def weapons(interaction: discord.Interaction,weapon: str):
     await interaction.response.send_message(msg)
 
 @bot.tree.command(name='stratagems',description='Displays information for any stratagems containing the name included') #show info on requested stratgems
-async def strategems(interaction: discord.Interaction,name: str):
+async def stratagems(interaction: discord.Interaction,name: str):
     msg = await bf.stratagems(name)
     await interaction.response.send_message(msg)
     
@@ -101,6 +96,6 @@ async def shutdown(ctx):
         
 @bot.command()      
 async def report(ctx):
-    await ctx.user.send('Please submit bug reports and feature requests in the form below:\nhttps://forms.gle/mAPt9wcj4qeaT2g26\n\nThank you for your service, Helldiver!')    
+    await ctx.user.send('Please submit bug reports and feature requests in the form below:\nhttps://forms.gle/mAPt9wcj4qeaT2g26 \n\nThank you for your service, Helldiver!')    
     
 bot.run(token) #starts bot and begins listening for events and commands

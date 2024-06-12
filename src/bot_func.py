@@ -88,11 +88,15 @@ async def planet(name):
             msg += '\n'+str(abs(round((event['health']/event['maxHealth'] -1)*100, 4))) + '% Defended'
         else:
             msg += '\n'+str(abs(round((item['health']/item['maxHealth'] -1)*100, 4))) + '% Liberated'
-        msg += '\nBiome and Hazards: ' + item['biome']['name'] + ' - '
+        msg += '\nSector: '+ item['sector'] +'\nBiome and Hazards: ' + item['biome']['name'] + ' - '
         if len(item['hazards']) > 1:
             msg += item['hazards'][0]['name'] + ', '+ item['hazards'][1]['name']
         else:
             msg += item['hazards'][0]['name']
+        query2='SELECT p.name FROM planets p WHERE p.id IN ("'+ '","'.join(str(x) for x in item['waypoints'])  +'")'
+        planetlst = await db_query('planets', query2)
+        if planetlst != None:
+            msg += '\nSupply Lines: ' + ', '.join(x['name'] for x in planetlst)
         msg += ('\n------------------\nHelldivers Active: '+ await commas(stats['playerCount']) +'\nEnemies Killed: '+ await commas(stats['enemiesKilled'])+
                 '\nHelldivers KIA: ' + await commas(stats['deaths']) + '\nBullets Fired: '+ await commas(stats['bulletsFired']))
         return msg
@@ -134,11 +138,17 @@ async def stratagems(name):
         msg = '-Stratagem Not Found-'
         return msg
     else:
-        msg = '**--Stratagem Info--**'
+        msg = '**--Stratagem Info--**\n'
         for item in results:
             if item['codename'] != None:
-                msg += '\n'+ item['codename']
-            msg += '\n'+ item['name'] + '\n> Call-in Time: ' + str(item['activation']) + ' sec\n> Uses: ' + item['uses'] + '\n> Cooldown Time: '+ str(item['cooldown']) + ' sec\n> Keys: '
+                msg += item['codename'] + ' - ' + item['name']
+            else:
+                msg += item['name']
+            if item['activation'] == None:
+                item['activation'] = 0
+            if item['cooldown'] == None:
+                item['cooldown'] = 0      
+            msg += '\n> Call-in Time: ' + str(item['activation']) + ' sec\n> Uses: ' + item['uses'] + '\n> Cooldown Time: '+ str(item['cooldown']) + ' sec\n> Keys: '
             for key in item['keys']:
                 msg += emojikeys[key]
         return msg
