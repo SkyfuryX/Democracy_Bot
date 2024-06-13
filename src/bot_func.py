@@ -95,7 +95,7 @@ async def planet(name):
             msg += item['hazards'][0]['name']
         query2='SELECT p.name FROM planets p WHERE p.id IN ("'+ '","'.join(str(x) for x in item['waypoints'])  +'")'
         planetlst = await db_query('planets', query2)
-        if planetlst != None:
+        if len(planetlst) > 0:
             msg += '\nSupply Lines: ' + ', '.join(x['name'] for x in planetlst)
         msg += ('\n------------------\nHelldivers Active: '+ await commas(stats['playerCount']) +'\nEnemies Killed: '+ await commas(stats['enemiesKilled'])+
                 '\nHelldivers KIA: ' + await commas(stats['deaths']) + '\nBullets Fired: '+ await commas(stats['bulletsFired']))
@@ -120,6 +120,7 @@ async def campaigns():
             bugfrnt += ' '+ item['planet']['name'] + ' ' + str(abs(round((item['planet']['health']/item['planet']['maxHealth'] -1)*100, 4))) + '% |'
         elif item['planet']['currentOwner'] == 'Illuminate':
             illufrnt += ' '+ item['planet']['name'] + ' ' + str(abs(round((item['planet']['health']/item['planet']['maxHealth'] -1)*100, 4))) + '% |'
+    #only add each section is it has extra content
     if len(autofrnt) > 20:
         msg += autofrnt
     if len(bugfrnt) > 19:

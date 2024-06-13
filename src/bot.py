@@ -16,7 +16,7 @@ message_time = {}
 intents = discord.Intents.default()
 intents.message_content = True
 descrip = '''A discord bot to view on-demand statistics from the game Helldrivers 2: Includes planet info, 
-Major Orders, dispatches from Super Earth, and more.\n!help for commands list\n!report to report issues or request new features '''
+Major Orders, dispatches from Super Earth, and more.\n!report to report issues or request new features\nContact - @sky.fury '''
 bot = commands.Bot(command_prefix='!', description=descrip, intents=intents)
 
 @bot.event
@@ -79,10 +79,10 @@ async def campaigns(interaction: discord.Interaction):
     msg = await bf.campaigns()
     await interaction.response.send_message(msg)
 
-@bot.tree.command(name='weapons',description='In Progress') #show information on weapons
+'''@bot.tree.command(name='weapons',description='In Progress') #show information on weapons
 async def weapons(interaction: discord.Interaction,weapon: str):
     msg = 'Work in progress'  
-    await interaction.response.send_message(msg)
+    await interaction.response.send_message(msg)'''
 
 @bot.tree.command(name='stratagems',description='Displays information for any stratagems containing the name included') #show info on requested stratgems
 async def stratagems(interaction: discord.Interaction,name: str):
