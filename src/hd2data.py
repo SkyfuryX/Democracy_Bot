@@ -93,7 +93,7 @@ def orders_data():
         container.upsert_item(item)
     print(str(count) + ' Orders Updated')
     
-def campaign_data():
+def campaign_and_planet_data():
     response = session.get("https://api.helldivers2.dev//api/v1/campaigns")
     data = response.json()
     campIDs = []
@@ -112,18 +112,32 @@ def campaign_data():
         item['name'] = item['planet']['name']
         count += 1
         container.upsert_item(item)
-    print(cmpmsg + str(count) + ' Campaigns Updated')        
+    print(cmpmsg + str(count) + ' Campaigns Updated') 
+    
+    container = database.get_container_client('planets')
+    count = 0
+    for item in data:
+        item['planet']['id'] = str(item['planet']['index'])
+        container.upsert_item(item['planet'])
+        count += 1      
+    print(str(count) + ' Planets Updated')       
         
 def data_upload():
-    print('Data update started at '+str(dt.now()))
+    print('10 min update started at '+str(dt.now()))
     war_data()
-    dispatch_data()
+    campaign_and_planet_data()
+    
+    print('10 min update completed at '+str(dt.now()))
+    
+def hourly_update():
+    print('Hourly update started at '+str(dt.now()))
     planet_data()
     orders_data()
-    campaign_data()
-    print('Data update completed at '+str(dt.now()))
-        
-schedule.every(30).minutes.do(data_upload)
+    print('Hourly update completed at '+str(dt.now()))
+      
+schedule.every(10).minutes.do(data_upload)
+schedule.every(60).minutes.do(hourly_update)
+print('Started at ' + str(dt.now()))
     
 while True:
     schedule.run_pending()
