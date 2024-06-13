@@ -1,0 +1,296 @@
+{
+  "data": [
+    {
+      "activation": 3,
+      "codename": "E/MG-101",
+      "cooldown": 180,
+      "createdAt": "2024-05-22T12:00:10.239Z",
+      "groupId": 1,
+      "id": 1,
+      "imageUrl": "https://vxspqnuarwhjjbxzgauv.supabase.co/storage/v1/object/public/stratagems/1/1.svg",
+      "keys": [
+        "down",
+        "up",
+        "left",
+        "right",
+        "right",
+        "left"
+      ],
+      "name": "HMG Emplacement",
+      "updatedAt": "2024-05-22T12:00:10.239Z",
+      "uses": "Unlimited"
+    },
+    {
+      "activation": 1,
+      "codename": null,
+      "cooldown": 75,
+      "createdAt": "2024-05-22T12:00:10.239Z",
+      "groupId": 1,
+      "id": 2,
+      "imageUrl": "https://vxspqnuarwhjjbxzgauv.supabase.co/storage/v1/object/public/stratagems/1/2.svg",
+      "keys": [
+        "right",
+        "right",
+        "left",
+        "down"
+      ],
+      "name": "Orbital EMS Strike",
+      "updatedAt": "2024-05-22T12:00:10.239Z",
+      "uses": "Unlimited"
+    },
+    {
+      "activation": 1,
+      "codename": null,
+      "cooldown": 75,
+      "createdAt": "2024-05-22T12:00:10.239Z",
+      "groupId": 1,
+      "id": 3,
+      "imageUrl": "https://vxspqnuarwhjjbxzgauv.supabase.co/storage/v1/object/public/stratagems/1/3.svg",
+      "keys": [
+        "right",
+        "right",
+        "down",
+        "right"
+      ],
+      "name": "Orbital Gas Strike",
+      "updatedAt": "2024-05-22T12:00:10.239Z",
+      "uses": "Unlimited"
+    },
+    {
+      "activation": 3,
+      "codename": null,
+      "cooldown": 100,
+      "createdAt": "2024-05-22T12:00:10.239Z",
+      "groupId": 1,
+      "id": 4,
+      "imageUrl": "https://vxspqnuarwhjjbxzgauv.supabase.co/storage/v1/object/public/stratagems/1/4.svg",
+      "keys": [
+        "right",
+        "right",
+        "up"
+      ],
+      "name": "Orbital Precision Strike",
+      "updatedAt": "2024-05-22T12:00:10.239Z",
+      "uses": "Unlimited"
+    },
+    {
+      "activation": 1,
+      "codename": null,
+      "cooldown": 100,
+      "createdAt": "2024-05-22T12:00:10.239Z",
+      "groupId": 1,
+      "id": 5,
+      "imageUrl": "https://vxspqnuarwhjjbxzgauv.supabase.co/storage/v1/object/public/stratagems/1/5.svg",
+      "keys": [
+        "right",
+        "right",
+        "down",
+        "up"
+      ],
+      "name": "Orbital Smoke Strike",
+      "updatedAt": "2024-05-22T12:00:10.239Z",
+      "uses": "Unlimited"
+    },
+    {
+      "activation": 3,
+      "codename": "FX-12",
+      "cooldown": 90,
+      "createdAt": "2024-05-22T12:00:10.239Z",
+      "groupId": 1,
+      "id": 6,
+      "imageUrl": "https://vxspqnuarwhjjbxzgauv.supabase.co/storage/v1/object/public/stratagems/1/6.svg",
+      "keys": [
+        "down",
+        "down",
+        "left",
+        "right",
+        "left",
+        "right"
+      ],
+      "name": "Shield Generator Relay",
+      "updatedAt": "2024-05-22T12:00:10.239Z",
+      "uses": "Unlimited"
+    },
+    {
+      "activation": 3,
+      "codename": "A/ARC-3",
+      "cooldown": 150,
+      "createdAt": "2024-05-22T12:00:10.239Z",
+      "groupId": 1,
+      "id": 7,
+      "imageUrl": "https://vxspqnuarwhjjbxzgauv.supabase.co/storage/v1/object/public/stratagems/1/7.svg",
+      "keys": [
+        "down",
+        "up",
+        "right",
+        "up",
+        "left",
+        "right"
+      ],
+      "name": "Tesla Tower",
+      "updatedAt": "2024-05-22T12:00:10.239Z",
+      "uses": "Unlimited"
+    },
+    {
+      "activation": 3,
+      "codename": "MD-6",
+      "cooldown": 180,
+      "createdAt": "2024-05-22T12:00:10.239Z",
+      "groupId": 2,
+      "id": 8,
+      "imageUrl": "https://vxspqnuarwhjjbxzgauv.supabase.co/storage/v1/object/public/stratagems/2/1.svg",
+      "keys": [
+        "down",
+        "right",
+        "up",
+        "right"
+      ],
+      "name": "Anti-Personnel Minefield",
+      "updatedAt": "2024-05-22T12:00:10.239Z",
+      "uses": "Unlimited"
+    },
+    {
+      "activation": 3,
+      "codename": "ARC-3",
+      "cooldown": 480,
+      "createdAt": "2024-05-22T12:00:10.239Z",
+      "groupId": 2,
+      "id": 9,
+      "imageUrl": "https://vxspqnuarwhjjbxzgauv.supabase.co/storage/v1/object/public/stratagems/2/2.svg",
+      "keys": [
+        "down",
+        "right",
+        "down",
+        "up",
+        "left",
+        "left"
+      ],
+      "name": "Arc Thrower",
+      "updatedAt": "2024-05-22T12:00:10.239Z",
+      "uses": "Unlimited"
+    },
+    {
+      "activation": 5,
+      "codename": "SH-20",
+      "cooldown": 300,
+      "createdAt": "2024-05-22T12:00:10.239Z",
+      "groupId": 2,
+      "id": 10,
+      "imageUrl": "https://vxspqnuarwhjjbxzgauv.supabase.co/storage/v1/object/public/stratagems/2/3.svg",
+      "keys": [
+        "down",
+        "left",
+        "down",
+        "down",
+        "up",
+        "left"
+      ],
+      "name": "Ballistic Shield Backpack",
+      "updatedAt": "2024-05-22T12:00:10.239Z",
+      "uses": "Unlimited"
+    },
+    {
+      "activation": 3,
+      "codename": "GL-21",
+      "cooldown": 480,
+      "createdAt": "2024-05-22T12:00:10.239Z",
+      "groupId": 2,
+      "id": 11,
+      "imageUrl": "https://vxspqnuarwhjjbxzgauv.supabase.co/storage/v1/object/public/stratagems/2/4.svg",
+      "keys": [
+        "down",
+        "left",
+        "up",
+        "left",
+        "down"
+      ],
+      "name": "Grenade Launcher",
+      "updatedAt": "2024-05-22T12:00:10.239Z",
+      "uses": "Unlimited"
+    },
+    {
+      "activation": 5,
+      "codename": "AX/LAS-5",
+      "cooldown": 480,
+      "createdAt": "2024-05-22T12:00:10.239Z",
+      "groupId": 2,
+      "id": 12,
+      "imageUrl": "https://vxspqnuarwhjjbxzgauv.supabase.co/storage/v1/object/public/stratagems/2/5.svg",
+      "keys": [
+        "down",
+        "up",
+        "left",
+        "up",
+        "right",
+        "right"
+      ],
+      "name": "\"Guard Dog\" Rover",
+      "updatedAt": "2024-05-22T12:00:10.239Z",
+      "uses": "Unlimited"
+    },
+    {
+      "activation": 3,
+      "codename": "MD-I4",
+      "cooldown": 180,
+      "createdAt": "2024-05-22T12:00:10.239Z",
+      "groupId": 2,
+      "id": 13,
+      "imageUrl": "https://vxspqnuarwhjjbxzgauv.supabase.co/storage/v1/object/public/stratagems/2/6.svg",
+      "keys": [
+        "down",
+        "left",
+        "left",
+        "down"
+      ],
+      "name": "Incendiary Mines",
+      "updatedAt": "2024-05-22T12:00:10.239Z",
+      "uses": "Unlimited"
+    },
+    {
+      "activation": 3,
+      "codename": "LAS-98",
+      "cooldown": 480,
+      "createdAt": "2024-05-22T12:00:10.239Z",
+      "groupId": 2,
+      "id": 14,
+      "imageUrl": "https://vxspqnuarwhjjbxzgauv.supabase.co/storage/v1/object/public/stratagems/2/7.svg",
+      "keys": [
+        "down",
+        "left",
+        "down",
+        "up",
+        "left"
+      ],
+      "name": "Laser Cannon",
+      "updatedAt": "2024-05-22T12:00:10.239Z",
+      "uses": "Unlimited"
+    },
+    {
+      "activation": 5,
+      "codename": "SH-20",
+      "cooldown": 480,
+      "createdAt": "2024-05-22T12:00:10.239Z",
+      "groupId": 2,
+      "id": 15,
+      "imageUrl": "https://vxspqnuarwhjjbxzgauv.supabase.co/storage/v1/object/public/stratagems/2/8.svg",
+      "keys": [
+        "down",
+        "up",
+        "left",
+        "right",
+        "left",
+        "right"
+      ],
+      "name": "Shield Generator Pack",
+      "updatedAt": "2024-05-22T12:00:10.239Z",
+      "uses": "Unlimited"
+    }
+  ],
+  "error": null,
+  "pagination": {
+    "page": 1,
+    "pageCount": 4,
+    "pageSize": 15,
+    "total": 59
+  }
+}
