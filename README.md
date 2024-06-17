@@ -5,6 +5,8 @@
 The Democracy Bot is a discord bot designed to provide on-demand information related to the Helldivers 2 Galactic War to your discord server. In addition, the Democracy Bot will provide inspiration to your discord users when Democratic language is used.<br/><br/>
 Disclaimer: The Democracy 'Bot' is loyal to Super Earth and not affiliated with the Automatons. If you think anyone you know or love may be an Automaton, please seek out your nearest Democracy Officer.
 <br/>
+## Improving Helldiver Morale through Inspiration
+The Democracy Bot is ever on the hunt for Democratic talk and will respond to messsages containing 'Democracy' or 'Democrat(ic)' with quotes the from Helldivers 2 game. Reponses will happen at most once per minute and it will avoid repeating the last 5 reponses provided.
 
 ## Commands - [optional], \<required\>
 ### /war
