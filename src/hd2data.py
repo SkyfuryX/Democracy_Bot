@@ -4,6 +4,7 @@ from dateutil.relativedelta import relativedelta
 from datetime import datetime as dt, timezone, timedelta, tzinfo
 from dotenv import load_dotenv
 from azure.cosmos import CosmosClient
+from azure.core import exceptions
 
 #https://helldivers-2.github.io/api/docs/openapi/swagger-ui.html
 
@@ -123,18 +124,29 @@ def campaign_and_planet_data():
     print(str(count) + ' Planets Updated')       
         
 def data_upload():
-    print('10 min update started at '+str(dt.now()))
-    war_data()
-    campaign_and_planet_data()
-    
-    print('10 min update completed at '+str(dt.now()))
+    try:
+        print('10 min update started at '+str(dt.now()))
+        war_data()
+        campaign_and_planet_data()
+        dispatch_data()
+        print('10 min update completed at '+str(dt.now()))
+    except exceptions.ServiceRequestError:
+        print('Failed to resolve, will attempt again on next schedule')
+    except requests.exceptions.JSONDecodeError:
+        print('JSON Response error')
+        
     
 def hourly_update():
-    print('Hourly update started at '+str(dt.now()))
-    planet_data()
-    orders_data()
-    print('Hourly update completed at '+str(dt.now()))
-      
+    try:
+        print('Hourly update started at '+str(dt.now()))
+        planet_data()
+        orders_data()
+        print('Hourly update completed at '+str(dt.now()))
+    except exceptions.ServiceRequestError:
+        print('Failed to resolve, will attempt again on next schedule')
+    except requests.exceptions.JSONDecodeError:
+        print('JSON Response error')
+        
 schedule.every(10).minutes.do(data_upload)
 schedule.every(60).minutes.do(hourly_update)
 print('Started at ' + str(dt.now()))

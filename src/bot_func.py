@@ -16,6 +16,12 @@ async def db_query(cont_name, db_query):
         container = database.get_container_client(cont_name)
         results = [item async for item in container.query_items(query=db_query)]
         return results
+    
+async def db_upload(cont_name):
+    async with CosmosClient(url=db_uri, credential=db_key) as client:
+        database =  client.get_database_client('democracy_bot')
+        container = database.get_container_client(cont_name)
+        return container
 
 async def commas(number):
     numlst = list(str(number))
@@ -133,7 +139,7 @@ async def campaigns():
             
 async def stratagems(name):
     emojikeys = {'up': ':arrow_up:','down':':arrow_down:','left':':arrow_left:','right':':arrow_right:'}
-    query = 'SELECT * FROM stratagems s WHERE CONTAINS(s.name, "'+name+'", true)'
+    query = 'SELECT * FROM stratagems s WHERE CONTAINS(s.name, "'+name+'", true) OFFSET 0 LIMIT 1'
     results = await db_query('stratagems', query)
     if results == None:
         msg = '-Stratagem Not Found-'
