@@ -43,26 +43,30 @@ async def on_message(message):
     #print(message.content)
     if bool(re.search('democracy|democrat', message.content.lower())) == True:
         #don't respond to ourselves
-        if message.author == bot.user:
-            return
-        #prevent democratic spam unless last message sent on a server by the bot was over a min prior
-        #tracks the last 5 response sent from the inpiration list to prevent the same message being sent in the same server within the last 5 responses sent
-        elif (message.guild.id in message_time.keys()) == False:
-            i = random.randint(1,len(inspiration))
-            message_time[message.guild.id] = {'time':'','reply': [99,99,99,99,99] }
-            message_time[message.guild.id]['time'] = dt.now()
-            message_time[message.guild.id]['reply'][4] = i
-            #print (str(message.guild.id),str(message_time[message.guild.id]))
-            await message.channel.send(inspiration[i-1][0:-1])
-        elif (message.guild.id in message_time.keys()) == True:
-            if (dt.now() - message_time[message.guild.id]['time']).total_seconds() > 60:
+        try:
+            if message.author == bot.user:
+                return
+            #prevent democratic spam unless last message sent on a server by the bot was over a min prior
+            #tracks the last 5 response sent from the inpiration list to prevent the same message being sent in the same server within the last 5 responses sent
+            elif (message.guild.id in message_time.keys()) == False:
+                i = random.randint(1,len(inspiration))
+                message_time[message.guild.id] = {'time':'','reply': [99,99,99,99,99] }
                 message_time[message.guild.id]['time'] = dt.now()
-                x = random.choice([e for e in range(len(inspiration)) if e not in message_time[message.guild.id]['reply']])
-                for a in range(4):
-                    message_time[message.guild.id]['reply'][a] = message_time[message.guild.id]['reply'][a+1] 
-                message_time[message.guild.id]['reply'][4] = x  
-                #print(str(message.guild.id),(str(message_time[message.guild.id]['reply'])))
-                await message.channel.send(inspiration[x][0:-1])
+                message_time[message.guild.id]['reply'][4] = i
+                #print (str(message.guild.id),str(message_time[message.guild.id]))
+                await message.channel.send(inspiration[i-1][0:-1])
+            elif (message.guild.id in message_time.keys()) == True:
+                if (dt.now() - message_time[message.guild.id]['time']).total_seconds() > 60:
+                    message_time[message.guild.id]['time'] = dt.now()
+                    x = random.choice([e for e in range(len(inspiration)) if e not in message_time[message.guild.id]['reply']])
+                    for a in range(4):
+                        message_time[message.guild.id]['reply'][a] = message_time[message.guild.id]['reply'][a+1] 
+                    message_time[message.guild.id]['reply'][4] = x  
+                    #print(str(message.guild.id),(str(message_time[message.guild.id]['reply'])))
+                    await message.channel.send(inspiration[x][0:-1])
+        except AttributeError: #respond to messages in DMs since they have no guildID
+            i = random.randint(1,len(inspiration))
+            await message.channel.send(inspiration[i-1][0:-1])
         
 @bot.tree.command(name='war',description='Display the overall stats of the current Galactic War') #shows info on the galatic war in general
 @app_commands.describe(public='Select True to share the response in this channel.')
@@ -76,19 +80,19 @@ async def orders(interaction: discord.Interaction, public: bool=False):
     msg = await bf.orders()
     await interaction.response.send_message(content=msg, ephemeral=not public)
 
-@bot.tree.command(name='dispatch', description='Displays the [number] most recent dispatch message(s) from Super Earth. Defaults to 1')
-@app_commands.describe(number='The number of messages requested.', public='Select True to share the response in this channel.')
+@bot.tree.command(name='dispatch', description='Displays the [number] most recent dispatch message(s) from Super Earth. Defaults to 1, max 3')
+@app_commands.describe(number='The number of messages requested. Max 3', public='Select True to share the response in this channel.')
 async def dispatch(interaction: discord.Interaction, number: int=1, public: bool=False):
     #displays latest dispatch messages
     query='SELECT d.published, d.message FROM dispatch d ORDER BY d.id DESC OFFSET 0 LIMIT '+ str(number)
     results = await bf.db_query('dispatch', query)
     msg = 'Latest message(s) from Super Earth:'
     for item in results:
-        msg += '\nDate: ' + str(dt.strptime(item['published'][0:10], '%Y-%m-%d') + relativedelta(years=160))[0:10] + '\n' + item['message'] #adds 160 years to date to make message more thematic
+        msg += '\n\nDate: ' + str(dt.strptime(item['published'][0:10], '%Y-%m-%d') + relativedelta(years=160))[0:10] + '\n' + item['message'] #adds 160 years to date to make message more thematic
     if number <= 3:
         await interaction.response.send_message(content=msg, ephemeral=not public)
     elif number >= 4:
-        await interaction.response.send_message(content=msg, ephemeral=True)
+        await interaction.response.send_message(content='Super Earth cannot grant your information request at this time. Request 3 or less dispatches.', ephemeral=True)
                            
 @bot.tree.command(name='planets',description='Displays information on a specific planet') #gathers liberation info and stats on a specific planet
 @app_commands.describe(name='The name of the planet to view.', public='Select True to share the response in this channel.')

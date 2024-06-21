@@ -118,7 +118,7 @@ async def campaigns():
     query='SELECT * FROM campaigns c'
     results = await db_query('campaigns', query)
     for item in results:
-        if item['planet']['currentOwner'] == 'Humans' and item['planet']['event'] == True:
+        if item['planet']['currentOwner'] == 'Humans' and len(item['planet']['event']) > 0:
             defense += ' ' + item['planet']['name'] + ' ' + str(abs(round((item['planet']['event']['health']/item['planet']['event']['maxHealth'] -1)*100, 4))) + '% |'
         elif item['planet']['currentOwner'] == 'Automaton':
             autofrnt += ' '+ item['planet']['name'] + ' ' + str(abs(round((item['planet']['health']/item['planet']['maxHealth'] -1)*100, 4))) + '% |'
