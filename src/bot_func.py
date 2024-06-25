@@ -65,7 +65,7 @@ async def orders():
     minsleft =  math.floor((timeleft.seconds/3600-hoursleft)*60)
     planetIDs = []
     for task in order['tasks']: #Determine objective type
-        if task['type'] == 11:
+        if task['type'] == 11 or task['type'] == 13:
             planetIDs.append(str(task['values'][2]))
     if len(planetIDs) > 0:
         query = 'SELECT p.name, p.currentOwner, p.maxHealth, p.health FROM planets p WHERE p.index IN ('+', '.join(planetIDs)+')'
@@ -76,7 +76,7 @@ async def orders():
             else:
                 msg += '\n> '+ item['name'] + ' - ' + str(abs(round((item['health']/item['maxHealth'] -1)*100, 4))) + '% Liberated'
         msg += ('\nTime Remaining: ' + str(timeleft.days) + ' days ' + str(hoursleft) + ' hours ' + str(minsleft) + ' minutes')
-        return msg
+    return msg
     
 async def planet(name):
     query='SELECT * FROM planets p WHERE p.name = "'+name.upper()+'"'

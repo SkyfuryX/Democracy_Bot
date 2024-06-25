@@ -134,6 +134,8 @@ def data_upload():
         print('Failed to resolve, will attempt again on next schedule')
     except requests.exceptions.JSONDecodeError:
         print('JSON Response error')
+    except exceptions.ServiceResponseError:
+        print('Connection aborted, will attempt again on next schedule')
         
     
 def hourly_update():
@@ -146,6 +148,8 @@ def hourly_update():
         print('Failed to resolve, will attempt again on next schedule')
     except requests.exceptions.JSONDecodeError:
         print('JSON Response error')
+    except exceptions.ServiceResponseError:
+        print('Connection aborted, will attempt again on next schedule')
         
 schedule.every(10).minutes.do(data_upload)
 schedule.every(60).minutes.do(hourly_update)
