@@ -96,7 +96,7 @@ async def orders():
     return msg
     
 async def planet(name):
-    query='SELECT * FROM planets p WHERE p.name = "'+name.upper()+'"'
+    query='SELECT * FROM planets p WHERE p.name = "'+ name +'"'
     results = await db_query('planets', query)  
     for item in results: 
         if item['currentOwner'] == 'Humans':
@@ -107,7 +107,7 @@ async def planet(name):
         #msg = '**--'+item['name']+'--** \n'+item['currentOwner']+' Control'
         if item['currentOwner'] == 'Super Earth' and (item['health']/item['maxHealth']) == 1 and item['event'] == None:
             msg = discord.Embed(title='**--'+item['name']+'--**', description= item['currentOwner']+' Control\n100% Liberated', type='rich')
-        elif item['currentOwner'] == 'Super Earth' and (item['health']/item['maxHealth']) == 1 and item['event'] == True:
+        elif item['currentOwner'] == 'Super Earth' and (item['health']/item['maxHealth']) == 1 and len(item['event']) > 0:
             event = item['event']
             msg = discord.Embed(title='**--'+item['name']+'--**', description= item['currentOwner']+' Control\n'+str(abs(round((event['health']/event['maxHealth'] -1)*100, 4))) + '% Defended', type='rich')
         else:

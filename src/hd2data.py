@@ -72,7 +72,7 @@ def planet_data():
     container = database.get_container_client('planets')
     response = session.get("https://api.helldivers2.dev/api/v1/planets")
     data = response.json()
-
+    data[107]['name'] = 'POPLI IX' #manual correction to prevent UTC-8 encoding errors
     count = 0
     for item in data: #inserts new items into db
         item['id'] = str(item['index'])
