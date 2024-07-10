@@ -1,4 +1,4 @@
-import test_func as tf
+import bot_func as tf
 import os, re, random, discord, asyncio
 from discord import app_commands
 from discord.ext import commands
@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 #examples https://github.com/Rapptz/discord.py/tree/master/examples
 
 load_dotenv()
-token = os.getenv('bot_test_token')
+token = os.getenv('bot_token')
 inspiration = open('liberty.txt', 'r').readlines()
 message_time = {}
 settings = {}

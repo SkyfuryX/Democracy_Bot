@@ -76,6 +76,8 @@ async def orders():
     for task in order['tasks']: #Determine objective type
         if task['type'] == 11 or task['type'] == 13:
             planetIDs.append(str(task['values'][2]))
+        if task['type'] == 3:
+            msg.add_field(name='Progress:',value= str(await commas(order['progress'][0])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][0]/task['values'][2])*100, 2))) + '%')
     if len(planetIDs) > 0:
         i=0
         query = 'SELECT p.name, p.currentOwner, p.maxHealth, p.health FROM planets p WHERE p.index IN ('+', '.join(planetIDs)+')'
@@ -90,7 +92,7 @@ async def orders():
         if i % 3 != 0:
             for x in range(int(round(i/3,0)), 3):
                 msg.add_field(name='', value='')
-        msg.add_field(name='Time Remaining', value= str(timeleft.days) + ' days ' + str(hoursleft) + ' hours ' + str(minsleft) + ' minutes', inline=False)
+    msg.add_field(name='Time Remaining', value= str(timeleft.days) + ' days ' + str(hoursleft) + ' hours ' + str(minsleft) + ' minutes', inline=False)
     return msg
     
 async def planet(name):
