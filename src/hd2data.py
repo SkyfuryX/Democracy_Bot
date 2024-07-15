@@ -9,10 +9,6 @@ from azure.core import exceptions
 #https://helldivers-2.github.io/api/docs/openapi/swagger-ui.html
 
 data = {}
-now = dt.now()
-dt_string = now.strftime("%m%d%Y%H%M%S")
-dt_formatted = now.strftime("%m-%d-%Y- %H:%M:%S")
-
 load_dotenv()
 session = requests.Session()
 headers = ast.literal_eval(os.getenv('header1'))
@@ -32,7 +28,10 @@ def war_data():
             query='SELECT StringToNumber(c.id) as idint FROM c ORDER BY c.idint DESC OFFSET 0 LIMIT 1',
             enable_cross_partition_query=True):
         id = item['idint']
-        
+    
+    now = dt.now()
+    dt_string = now.strftime("%m%d%Y%H%M%S")
+    dt_formatted = now.strftime("%m-%d-%Y %H:%M:%S")
     #formats data to table schema
     data['id'] = str(id + 1)
     data['date'] = dt_formatted    
