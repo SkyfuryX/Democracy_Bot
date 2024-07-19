@@ -11,6 +11,7 @@ The Democracy Bot is ever on the hunt for Democratic talk and will respond to me
 
 ## Commands - [optional], \<required\>
 ### /war
+Provides overall data on the Galactic War, just like what is available when Interacting with the War Table on the Super Destroyer<br/>
 ![image](https://github.com/user-attachments/assets/a06fa2cc-d694-4492-a4ea-7c4d3d195315)
 
 ### /dispatch [number]
