@@ -1,7 +1,7 @@
 from typing import Self
 import bot_func as bf
 import os, re, random, discord, requests
-from discord import Client, app_commands
+from discord import app_commands
 from discord.ext import commands, tasks
 from dateutil.relativedelta import relativedelta
 from datetime import datetime as dt
@@ -79,15 +79,15 @@ class DemBot(commands.Bot):
 class DataCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        # self.secondary_data.start()
     
     def cog_load(self):
-        print('Task loaded.')
+        print('Tasks loaded.')
         self.primary_data.start()
+        self.secondary_data.start()
             
     def cog_unload(self):
         self.primary_data.stop()
-        # self.secondary_data.stop()
+        self.secondary_data.stop()
         
     @commands.Cog.listener()
     async def on_ready(self):
@@ -104,20 +104,23 @@ class DataCog(commands.Cog):
     
     @primary_data.before_loop
     async def before_upload(self):
-        print('Waiting...')
+        print('Primary Waiting...')
         await self.bot.wait_until_ready()
-        print('Ready!')
+        print('Primary Ready!')
         
-    '''@tasks.loop(minutes=60)
-    async def secondary_data():
-        try:
-            await bf.planet_data()
-        except exceptions.ServiceRequestError:
-            print('Failed to resolve, will attempt again on next schedule')
-        except requests.exceptions.JSONDecodeError:
-            print('JSON Response error')
-        except exceptions.ServiceResponseError:
-            print('Connection aborted, will attempt again on next schedule')'''
+    @tasks.loop(minutes=60)
+    async def secondary_data(self):
+        print('60 min update started at '+ str(dt.now()))
+        await bf.planet_data()
+        print('60 min update finshed at '+ str(dt.now()))
+        
+    @secondary_data.before_loop
+    async def before_upload(self):
+        print('Secondary Waiting...')
+        await self.bot.wait_until_ready()
+        print('Secondary Ready!')
+
+
             
 bot = DemBot(command_prefix='!', description=descrip, intents=intents)
     
@@ -215,5 +218,4 @@ async def sync(self, ctx):
         await self.tree.sync() 
         await ctx.channel.send(content='Commands Synchronized') 
                
-#bot = commands.Bot(command_prefix='!', description=descrip, intents=intents)                       
-bot.run(bot_test_token) #starts bot and begins listening for events and commands
+bot.run(token) #starts bot and begins listening for events and commands
