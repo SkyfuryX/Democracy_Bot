@@ -1,28 +1,57 @@
-import os, re, random, math, discord
+import os, re, random, math, discord, requests, ast
 from discord.ext import commands
-from dateutil.relativedelta import relativedelta
 from datetime import datetime as dt, timezone, timedelta
-from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
 from azure.cosmos.aio import CosmosClient
+from azure.core import exceptions
 
 load_dotenv()
 db_uri = os.getenv('account_uri')
 db_key = os.getenv('account_key')
 
+data = {}
+session = requests.Session()
+headers = ast.literal_eval(os.getenv('header1'))
+session.headers.update(headers)
+
+with open('auto\\planetlist.txt', 'r') as file:
+    planetlist = file.read().split(', ')
+    file.close()
+
+# DATABASE FUNCTIONS
 async def db_query(cont_name, db_query):
-    async with CosmosClient(url=db_uri, credential=db_key) as client:
-        database =  client.get_database_client('democracy_bot')
+    async with CosmosClient(url=db_uri, credential=db_key) as qclient:
+        database =  qclient.get_database_client('democracy_bot')
         container = database.get_container_client(cont_name)
         results = [item async for item in container.query_items(query=db_query)]
         return results
     
-async def db_upload(cont_name):
-    async with CosmosClient(url=db_uri, credential=db_key) as client:
-        database =  client.get_database_client('democracy_bot')
+async def db_upload(cont_name, data, type: int):
+    async with CosmosClient(url=db_uri, credential=db_key) as upclient:
+        await upclient.__aenter__()
+        database =  upclient.get_database_client('democracy_bot')
         container = database.get_container_client(cont_name)
-        return container
+        if cont_name == 'war_status':
+            await container.upsert_item(data)
+        else:
+            for item in data:
+                if type == 0:
+                    await container.upsert_item(item)
+                elif type == 1:
+                    await container.upsert_item(item['planet'])
+    
+async def db_delete(cont_name, query):
+    async with CosmosClient(url=db_uri, credential=db_key) as dlclient:
+        database =  dlclient.get_database_client('democracy_bot')
+        container = database.get_container_client(cont_name)
+        results = [item async for item in container.query_items(query=query)]
+        count = 0
+        for item in results:
+            await container.delete_item(item, partition_key=item['name']) 
+            count += 1
+        return count    
 
+#MISC FUNCTION
 async def commas(number):
     numlst = list(str(number))
     x = int(math.floor(len(numlst) / 3))
@@ -40,6 +69,7 @@ async def commas(number):
     numlst = ''.join(numlst)
     return numlst #return string to be concat'd into messages
 
+#COMMAND FUNCTIONS
 async def war():
     query='SELECT * FROM war_status w ORDER BY w._ts DESC OFFSET 0 LIMIT 1'
     results = await db_query('war_status', query)
@@ -71,27 +101,40 @@ async def orders():
     hoursleft = math.floor(timeleft.seconds/3600)
     minsleft =  math.floor((timeleft.seconds/3600-hoursleft)*60)
     msg = discord.Embed(title='**--' + order['title'] + '--**', type='rich')
-    msg.add_field(name=order['briefing'], value= order['description'], inline = False)
+    if order['briefing'] == order['description'] or order['description'] == None:
+        msg.add_field(name=order['briefing'], value='', inline = False)
+    else:
+        msg.add_field(name=order['briefing'], value= order['description'], inline = False)
     planetIDs = []
-    for task in order['tasks']: #Determine objective type
+    i=0
+    for task in order['tasks']: # Handles task types 2,3,11,13
         if task['type'] == 11 or task['type'] == 13:
             planetIDs.append(str(task['values'][2]))
         if task['type'] == 3:
-            msg.add_field(name='Progress:',value= str(await commas(order['progress'][0])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][0]/task['values'][2])*100, 2))) + '%')
-    if len(planetIDs) > 0:
-        i=0
+            msg.add_field(name='Progress:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
+            i += 1
+        if task['type'] == 12:
+            msg.add_field(name='Defend ' + str(task['values'][0]) + ' Attacks:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][0])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][0])*100, 2))) + '%')
+            i += 1   
+        if task['type'] == 2:
+            if task['values'][4] == 3992382197:
+                msg.add_field(name='Common Samples Collected on '+ planetlist[task['values'][8]] + ':',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
+            if task['values'][4] == 2985106497:
+                msg.add_field(name='Rare Samples Collected on '+ planetlist[task['values'][8]] + ':',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
+            i += 1         
+    if len(planetIDs) > 0: # Adds planet progress for tasks 11,13
         query = 'SELECT p.name, p.currentOwner, p.maxHealth, p.health FROM planets p WHERE p.index IN ('+', '.join(planetIDs)+')'
         results = await db_query('planets', query)
         for item in results:
             if item['currentOwner'] == 'Humans' and (item['health']/item['maxHealth']) == 1:
-                i +=1
                 msg.add_field(name= item['name'], value= '100% Liberated', inline=True)
-            else:
                 i +=1
+            else:
                 msg.add_field(name= item['name'], value= str(abs(round((item['health']/item['maxHealth'] -1)*100, 4))) + '% Liberated', inline= True)
-        if i % 3 != 0:
-            for x in range(int(round(i/3,0)), 3):
-                msg.add_field(name='', value='')
+                i += 1       
+    if i % 3 != 0: # adds blank fields to keep the embed looking nice
+        for x in range(int(round(i/3,0)), 3):
+            msg.add_field(name='', value='')
     msg.add_field(name='Time Remaining', value= str(timeleft.days) + ' days ' + str(hoursleft) + ' hours ' + str(minsleft) + ' minutes', inline=False)
     return msg
     
@@ -173,8 +216,7 @@ async def campaigns():
     if len(illudef) > 0:
         defcam.add_field(name ='Illuminate Front:', value = ', '.join(illudef), inline=False)
     return libcam, defcam
-
-            
+           
 async def stratagems(name):
     emojikeys = {'up': ':arrow_up:','down':':arrow_down:','left':':arrow_left:','right':':arrow_right:'}
     query = 'SELECT * FROM stratagems s WHERE CONTAINS(s.name, "'+name+'", true) OFFSET 0 LIMIT 1'
@@ -202,3 +244,101 @@ async def stratagems(name):
             msg.add_field(name='Activation:', value= keys)
             msg.add_field(name='', value = '')
         return msg
+    
+#DATA UPLOAD FUNCTIONS
+async def war_data():
+    #gets only the highest ID for db key since the data doesnt have one itself
+    results = await db_query('war_status', 'SELECT StringToNumber(c.id) as idint FROM c ORDER BY c.idint DESC OFFSET 0 LIMIT 1')
+    id = results[0]['idint']
+    
+    now = dt.now()
+    dt_formatted = now.strftime("%m-%d-%Y %H:%M:%S")
+    #formats data to table schema
+    data = {}
+    data['id'] = str(id + 1)
+    data['date'] = dt_formatted    
+
+    response = session.get("https://api.helldivers2.dev/api/v1/war") #Overall War data
+    war_stats = response.json()
+    war_stats = war_stats['statistics']
+    war_stats = {key: value for key,value in war_stats.items() if key not in ['revives','timePlayed','accuracy',]}
+    data.update(war_stats)
+    
+    await db_upload('war_status', data, 0)
+    print('1 War Update Recorded')
+
+#DISPATCH DATA
+async def dispatch_data():
+    response = session.get("https://api.helldivers2.dev/api/v1/dispatches") 
+    data = response.json()
+
+    #queries for last uploaded id
+    results = await db_query('dispatch', 'SELECT d.id as id FROM dispatch d ORDER BY d.id DESC OFFSET 0 LIMIT 1')
+    for item in results:
+        id = int(item['id'])
+    count = 0
+    upload = []
+    for item in data: #inserts new items into db
+        if item['id'] > id:
+            item['id'] = str(item['id'])
+            item['message'] = re.sub('<i=[0-9]>|</i>', '**', item['message'])
+            count += 1 
+            upload.append(item)
+    if len(upload) > 0:
+        await db_upload('dispatch', upload, 0)
+    print(str(count) + ' New Dispatches Recorded')
+
+#PLANET DATA
+async def planet_data():
+    response = session.get("https://api.helldivers2.dev/api/v1/planets")
+    data = response.json()
+    data[107]['name'] = 'POPLI IX' #manual correction to prevent UTF-8 encoding errors
+    count = 0
+    for item in data: #inserts new items into db
+        item['id'] = str(item['index'])
+        count += 1 
+    await db_upload('planets', data, 0)     
+    print(str(count) + ' Planets Updated') 
+
+#ORDERS DATA
+async def orders_data():
+    response = session.get("https://api.helldivers2.dev/api/v1/assignments")
+    data = response.json()
+    count = 0
+    for item in data: #inserts new items into db
+        item['id'] = str(item['id'])
+        item['expiration'] = item['expiration'][0:10] + ' ' + item['expiration'][11:19]
+        count += 1 
+    
+    if count > 0:    
+        await db_upload('major_orders', data, 0)
+    print(str(count) + ' Orders Updated')
+    
+async def campaign_and_planet_data():
+    response = session.get("https://api.helldivers2.dev/api/v1/campaigns")
+    data = response.json()
+    campIDs = []
+    for item in data:
+        campIDs.append(str(item['id']))
+
+    count = await db_delete('campaigns', 'SELECT * FROM campaigns c WHERE c.id NOT IN ("'+'", "'.join(campIDs)+'")')
+    cmpmsg = str(count) + ' Campaigns Deleted, '
+    
+    # for item in container.query_items(query='SELECT * FROM campaigns c WHERE c.id NOT IN ("'+'", "'.join(campIDs)+'")',
+    #     enable_cross_partition_query=True): #query to find and delete the items no longer in current campaign info
+    #     await container.delete_item(item, partition_key=item['name']) 
+    #     count += 1
+    # cmpmsg = str(count) + ' Campaigns Deleted, '       
+    count = 0
+    for item in data:
+        item['id'] = str(item['id'])
+        item['name'] = item['planet']['name']
+        count += 1
+    await db_upload('campaigns', data, 0)
+    print(cmpmsg + str(count) + ' Campaigns Updated') 
+    count = 0
+    for item in data:
+        item['planet']['id'] = str(item['planet']['index'])
+        count += 1        
+    await db_upload('planets', data, 1)  
+    print(str(count) + ' Planets Updated') 
