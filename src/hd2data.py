@@ -9,10 +9,6 @@ from azure.core import exceptions
 #https://helldivers-2.github.io/api/docs/openapi/swagger-ui.html
 
 data = {}
-now = dt.now()
-dt_string = now.strftime("%m%d%Y%H%M%S")
-dt_formatted = now.strftime("%m-%d-%Y- %H:%M:%S")
-
 load_dotenv()
 session = requests.Session()
 headers = ast.literal_eval(os.getenv('header1'))
@@ -32,7 +28,10 @@ def war_data():
             query='SELECT StringToNumber(c.id) as idint FROM c ORDER BY c.idint DESC OFFSET 0 LIMIT 1',
             enable_cross_partition_query=True):
         id = item['idint']
-        
+    
+    now = dt.now()
+    dt_string = now.strftime("%m%d%Y%H%M%S")
+    dt_formatted = now.strftime("%m-%d-%Y %H:%M:%S")
     #formats data to table schema
     data['id'] = str(id + 1)
     data['date'] = dt_formatted    
@@ -72,7 +71,7 @@ def planet_data():
     container = database.get_container_client('planets')
     response = session.get("https://api.helldivers2.dev/api/v1/planets")
     data = response.json()
-
+    data[107]['name'] = 'POPLI IX' #manual correction to prevent UTC-8 encoding errors
     count = 0
     for item in data: #inserts new items into db
         item['id'] = str(item['index'])
@@ -134,6 +133,8 @@ def data_upload():
         print('Failed to resolve, will attempt again on next schedule')
     except requests.exceptions.JSONDecodeError:
         print('JSON Response error')
+    except exceptions.ServiceResponseError:
+        print('Connection aborted, will attempt again on next schedule')
         
     
 def hourly_update():
@@ -146,6 +147,8 @@ def hourly_update():
         print('Failed to resolve, will attempt again on next schedule')
     except requests.exceptions.JSONDecodeError:
         print('JSON Response error')
+    except exceptions.ServiceResponseError:
+        print('Connection aborted, will attempt again on next schedule')
         
 schedule.every(10).minutes.do(data_upload)
 schedule.every(60).minutes.do(hourly_update)

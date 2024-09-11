@@ -37,4 +37,3 @@ Provides stratgem information, supports Autocomplete.<br/>
 ### /report
 Sends a link to form F-33D (google form) visible only to the user to provide feedback or report an issue
 ![image](https://github.com/user-attachments/assets/dacfc1a7-7c8d-43a6-9de0-4423074fcfa0)
-
