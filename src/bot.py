@@ -1,12 +1,10 @@
-from typing import Self
 import bot_func as bf
-import os, re, random, discord, requests
+import os, re, random, discord
 from discord import app_commands
 from discord.ext import commands, tasks
 from dateutil.relativedelta import relativedelta
 from datetime import datetime as dt
 from dotenv import load_dotenv
-from azure.core import exceptions
 
 #examples https://github.com/Rapptz/discord.py/tree/master/examples
 
@@ -29,7 +27,7 @@ with open('auto\\stratlist.txt', 'r') as file:
 #initiate bot
 intents = discord.Intents.default()
 intents.message_content = True
-descrip = '''A discord bot to view on-demand statistics from the game Helldrivers 2. Includes Planet info, Major Orders, Dispatches from Super Earth, and more.\n/report for bugs or feature requests.\nDiscord Contact: @sky.fury'''
+descrip = '''A discord bot to view on-demand statistics from the game Helldivers 2. Includes Planet info, Major Orders, Dispatches from Super Earth, and more.\n/report for bugs or feature requests.\nDiscord Contact: @sky.fury'''
 #bot = commands.Bot(command_prefix='!', description=descrip, intents=intents)
 
 class DemBot(commands.Bot):
@@ -103,7 +101,7 @@ class DataCog(commands.Cog):
         print('10 min update finshed at '+ str(dt.now()))
     
     @primary_data.before_loop
-    async def before_upload(self):
+    async def before_primary(self):
         print('Primary Waiting...')
         await self.bot.wait_until_ready()
         print('Primary Ready!')
@@ -115,13 +113,11 @@ class DataCog(commands.Cog):
         print('60 min update finshed at '+ str(dt.now()))
         
     @secondary_data.before_loop
-    async def before_upload(self):
+    async def before_secondary(self):
         print('Secondary Waiting...')
         await self.bot.wait_until_ready()
         print('Secondary Ready!')
 
-
-            
 bot = DemBot(command_prefix='!', description=descrip, intents=intents)
     
 @bot.tree.command(name='war',description='Display the overall stats of the current Galactic War') #shows info on the galatic war in general

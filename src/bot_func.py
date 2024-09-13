@@ -1,9 +1,7 @@
 import os, re, random, math, discord, requests, ast
-from discord.ext import commands
 from datetime import datetime as dt, timezone, timedelta
 from dotenv import load_dotenv
 from azure.cosmos.aio import CosmosClient
-from azure.core import exceptions
 
 load_dotenv()
 db_uri = os.getenv('account_uri')
@@ -102,21 +100,29 @@ async def orders():
     minsleft =  math.floor((timeleft.seconds/3600-hoursleft)*60)
     msg = discord.Embed(title='**--' + order['title'] + '--**', type='rich')
     if order['briefing'] == order['description'] or order['description'] == None:
-        msg.add_field(name=order['briefing'], value='', inline = False)
+        msg.add_field(name='', value='**' + order['briefing'] + '**', inline = False)
     else:
-        msg.add_field(name=order['briefing'], value= order['description'], inline = False)
+        msg.add_field(name='', value= '**' + order['briefing'] + '**', inline = False)
+        msg.add_field(name='', value= order['description'], inline = False)
     planetIDs = []
     i=0
     for task in order['tasks']: # Handles task types 2,3,11,13
-        if task['type'] == 11 or task['type'] == 13:
+        if task['type'] == 11 or task['type'] == 13: #Liberate/Defend specific planet
             planetIDs.append(str(task['values'][2]))
-        if task['type'] == 3:
-            msg.add_field(name='Progress:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
-            i += 1
-        if task['type'] == 12:
+        if task['type'] == 3: #Value-Based
+            if task['values'][3] == 1379865898: #Bile Spewers
+                msg.add_field(name='Bile Spewers:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
+                i += 1
+            elif task['values'][3] == 2058088313: #Warriors
+                msg.add_field(name='Warriors:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
+                i += 1
+            else: #General progression
+                msg.add_field(name='Progress:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
+                i += 1
+        if task['type'] == 12: #Planet Defenses
             msg.add_field(name='Defend ' + str(task['values'][0]) + ' Attacks:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][0])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][0])*100, 2))) + '%')
             i += 1   
-        if task['type'] == 2:
+        if task['type'] == 2: # Sample Collections
             if task['values'][4] == 3992382197:
                 msg.add_field(name='Common Samples Collected on '+ planetlist[task['values'][8]] + ':',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
             if task['values'][4] == 2985106497:
