@@ -91,8 +91,7 @@ async def orders():
     results = await db_query('major_orders', query)
     for item in results:
         order = item
-    now = dt.now(timezone.utc) + timedelta(hours=4)
-    timeleft = dt.strptime(order['expiration'], '%Y-%m-%d %H:%M:%S').astimezone(timezone.utc) - now #find time remaining for objective
+    timeleft = dt.strptime(order['expiration'], '%Y-%m-%d %H:%M:%S').astimezone(timezone.utc) - dt.now(timezone.utc) - timedelta(hours=4) #find time remaining for objective, timedelta needed for local hostong only
     if timeleft.days < 0:
         msg = discord.Embed(title='-Awaiting Orders from Super Earth-', type='rich')
         return msg
@@ -109,7 +108,7 @@ async def orders():
     for task in order['tasks']: # Handles task types 2,3,11,13
         if task['type'] == 11 or task['type'] == 13: #Liberate/Defend specific planet
             planetIDs.append(str(task['values'][2]))
-        if task['type'] == 3: #Value-Based
+        elif task['type'] == 3: #Value-Based
             if task['values'][3] == 1379865898: #Bile Spewers
                 msg.add_field(name='Bile Spewers:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
                 i += 1
@@ -119,15 +118,21 @@ async def orders():
             else: #General progression
                 msg.add_field(name='Progress:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
                 i += 1
-        if task['type'] == 12: #Planet Defenses
+        elif task['type'] == 12: #Planet Defenses
             msg.add_field(name='Defend ' + str(task['values'][0]) + ' Attacks:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][0])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][0])*100, 2))) + '%')
             i += 1   
-        if task['type'] == 2: # Sample Collections
+        elif task['type'] == 2: # Sample Collections
             if task['values'][4] == 3992382197:
                 msg.add_field(name='Common Samples Collected on '+ planetlist[task['values'][8]] + ':',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
             if task['values'][4] == 2985106497:
                 msg.add_field(name='Rare Samples Collected on '+ planetlist[task['values'][8]] + ':',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
-            i += 1         
+            i += 1
+        elif task['type'] == 15: #
+            msg.add_field(name='Liberate more planets than are lost.', value='Current Progress: ' + str(task['values'][0] - 1))
+            i += 1
+        else: # General handling for new tasks
+            msg.add_field(name='New Objective Detected',value='Collecting Information from Super Earth. Information will be available shortly.' )  
+            i += 1          
     if len(planetIDs) > 0: # Adds planet progress for tasks 11,13
         query = 'SELECT p.name, p.currentOwner, p.maxHealth, p.health FROM planets p WHERE p.index IN ('+', '.join(planetIDs)+')'
         results = await db_query('planets', query)
