@@ -107,21 +107,21 @@ async def orders():
     for task in order['tasks']: # Handles task types 2,3,11,12,13
         if task['type'] == 11 or task['type'] == 13: #Liberate/Defend specific planet
             planetIDs.append(str(task['values'][2]))
-        elif task['type'] == 3: #Value-Based
+        elif task['type'] == 3: #Value-Based, 3 Enemy Kills / 5 Item Kills
             if task['values'][3] == 1379865898: #Bile Spewers
                 msg.add_field(name='Bile Spewers:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
                 i += 1
             elif task['values'][3] == 2058088313: #Warriors
                 msg.add_field(name='Warriors:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
                 i += 1
-            elif task['values'][3] == 1978117092: #Stalwart
-                msg.add_field(name='Stalwart Terminid Kills:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
+            elif task['values'][5] == 1978117092: #Stalwart
+                msg.add_field(name='Stalwart Kills:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
                 i += 1
-            elif task['values'][3] == 934703916: #Machine Gun
-                msg.add_field(name='Machine Gun Terminid Kills:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
+            elif task['values'][5] == 934703916: #Machine Gun
+                msg.add_field(name='Machine Gun Kills:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
                 i += 1
-            elif task['values'][3] == 4038802832: #Heavy Machine gun
-                msg.add_field(name='Heavy MAchine Gun Terminid Kills:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
+            elif task['values'][5] == 4038802832: #Heavy Machine gun
+                msg.add_field(name='Heavy Machine Gun Kills:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
                 i += 1
             else: #General progression
                 msg.add_field(name='Progress:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
