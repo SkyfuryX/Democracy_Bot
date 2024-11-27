@@ -89,9 +89,8 @@ async def war():
 async def orders():
     query='SELECT o.title, o.briefing, o.description, o.expiration, o.tasks, o.progress FROM major_orders o ORDER BY o.expiration DESC OFFSET 0 LIMIT 1'
     results = await db_query('major_orders', query)
-    for item in results:
-        order = item
-    timeleft = dt.strptime(order['expiration'], '%Y-%m-%d %H:%M:%S').astimezone(timezone.utc) - dt.now(timezone.utc) - timedelta(hours=4) #find time remaining for objective, timedelta needed for local hostong only
+    order = results[0]
+    timeleft = dt.strptime(order['expiration'], '%Y-%m-%d %H:%M:%S').astimezone(timezone.utc) - dt.now(timezone.utc) - timedelta(hours=4) #find time remaining for objective, timedelta needed for local hosting only
     if timeleft.days < 0:
         msg = discord.Embed(title='-Awaiting Orders from Super Earth-', type='rich')
         return msg
@@ -105,7 +104,7 @@ async def orders():
         msg.add_field(name='', value= order['description'], inline = False)
     planetIDs = []
     i=0
-    for task in order['tasks']: # Handles task types 2,3,11,13
+    for task in order['tasks']: # Handles task types 2,3,11,12,13
         if task['type'] == 11 or task['type'] == 13: #Liberate/Defend specific planet
             planetIDs.append(str(task['values'][2]))
         elif task['type'] == 3: #Value-Based
@@ -115,12 +114,28 @@ async def orders():
             elif task['values'][3] == 2058088313: #Warriors
                 msg.add_field(name='Warriors:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
                 i += 1
+            elif task['values'][3] == 1978117092: #Stalwart
+                msg.add_field(name='Stalwart Terminid Kills:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
+                i += 1
+            elif task['values'][3] == 934703916: #Machine Gun
+                msg.add_field(name='Machine Gun Terminid Kills:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
+                i += 1
+            elif task['values'][3] == 4038802832: #Heavy Machine gun
+                msg.add_field(name='Heavy MAchine Gun Terminid Kills:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
+                i += 1
             else: #General progression
                 msg.add_field(name='Progress:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
                 i += 1
         elif task['type'] == 12: #Planet Defenses
-            msg.add_field(name='Defend ' + str(task['values'][0]) + ' Attacks:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][0])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][0])*100, 2))) + '%')
-            i += 1   
+            if task['values'][1] == 2:
+                msg.add_field(name='Defend ' + str(task['values'][0]) + ' Terminid Attack(s):',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][0])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][0])*100, 2))) + '%')
+                i += 1     
+            elif task['values'][1] == 3:
+                msg.add_field(name='Defend ' + str(task['values'][0]) + ' Automaton Attack(s):',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][0])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][0])*100, 2))) + '%')
+                i += 1                 
+            else:
+                msg.add_field(name='Defend ' + str(task['values'][0]) + ' Attacks:',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][0])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][0])*100, 2))) + '%')
+                i += 1   
         elif task['type'] == 2: # Sample Collections
             if task['values'][4] == 3992382197:
                 msg.add_field(name='Common Samples Collected on '+ planetlist[task['values'][8]] + ':',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
@@ -128,7 +143,7 @@ async def orders():
                 msg.add_field(name='Rare Samples Collected on '+ planetlist[task['values'][8]] + ':',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][2])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][2])*100, 2))) + '%')
             i += 1
         elif task['type'] == 15: #
-            msg.add_field(name='Liberate more planets than are lost.', value='Current Progress: ' + str(task['values'][0] - 1))
+            msg.add_field(name='Liberate more planets than are lost.', value='Current Progress: ' + str(order['progress'][i]))
             i += 1
         else: # General handling for new tasks
             msg.add_field(name='New Objective Detected',value='Collecting Information from Super Earth. Information will be available shortly.' )  
