@@ -1,10 +1,11 @@
 import bot_func as bf
-import os, re, random, discord
+import os, re, random, discord,requests
 from discord import app_commands
 from discord.ext import commands, tasks
 from dateutil.relativedelta import relativedelta
 from datetime import datetime as dt
 from dotenv import load_dotenv
+from azure.core import exceptions
 
 #examples https://github.com/Rapptz/discord.py/tree/master/examples
 
@@ -94,10 +95,17 @@ class DataCog(commands.Cog):
     @tasks.loop(minutes=10)
     async def primary_data(self):
         print('10 min update started at '+ str(dt.now()))
-        await bf.war_data()
-        await bf.dispatch_data()
-        await bf.orders_data()
-        await bf.campaign_and_planet_data()
+        try:
+            await bf.war_data()
+            await bf.dispatch_data()
+            await bf.orders_data()
+            await bf.campaign_and_planet_data()
+        except exceptions.ServiceRequestError:
+            print('Failed to resolve, will attempt again on next schedule')
+        except requests.exceptions.JSONDecodeError:
+            print('JSON Response error')
+        except exceptions.ServiceResponseError:
+            print('Connection aborted, will attempt again on next schedule')
         print('10 min update finshed at '+ str(dt.now()))
     
     @primary_data.before_loop
@@ -109,7 +117,14 @@ class DataCog(commands.Cog):
     @tasks.loop(minutes=60)
     async def secondary_data(self):
         print('60 min update started at '+ str(dt.now()))
-        await bf.planet_data()
+        try:
+            await bf.planet_data()
+        except exceptions.ServiceRequestError:
+            print('Failed to resolve, will attempt again on next schedule')
+        except requests.exceptions.JSONDecodeError:
+            print('JSON Response error')
+        except exceptions.ServiceResponseError:
+            print('Connection aborted, will attempt again on next schedule')
         print('60 min update finshed at '+ str(dt.now()))
         
     @secondary_data.before_loop
