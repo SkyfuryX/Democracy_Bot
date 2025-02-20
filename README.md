@@ -6,8 +6,6 @@ The Democracy Bot is a discord bot designed to provide on-demand information rel
 Disclaimer: The Democracy 'Bot' is loyal to Super Earth and not affiliated with the Automatons. If you think anyone you know or love may be an Automaton, please seek out your nearest Democracy Officer.
 <br/><br/>
 All responses are packaged neatly in discord embeds and are private by default, with the option to make a response public to share with fellow Helldivers.
-## Improving Helldiver Morale through Inspiration
-The Democracy Bot is ever on the hunt for Democratic talk and will respond to messsages containing 'Democracy' or 'Democrat(ic)' with quotes the from Helldivers 2 game. Responses will happen at most once per minute and it will avoid repeating the last 5 responses provided.
 
 ## Commands - [optional], \<required\>
 ### /war
