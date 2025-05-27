@@ -1,19 +1,16 @@
-from typing import Self
 import bot_func as bf
-import os, re, random, discord, requests
+import discord 
 from discord import app_commands
 from discord.ext import commands, tasks
 from dateutil.relativedelta import relativedelta
 from datetime import datetime as dt
-from dotenv import load_dotenv
 from azure.core import exceptions
 
 #examples https://github.com/Rapptz/discord.py/tree/master/examples
 
-load_dotenv()
-token = os.getenv('bot_token')
-bot_test_token = os.getenv('bot_test_token')
-inspiration = open('liberty.txt', 'r').readlines()
+token = bf.config['BOT_TOKEN'] 
+bot_test_token = bf.config['BOT_TEST_TOKEN'] #token for testing bot commands in a private server
+#inspiration = open('liberty.txt', 'r').readlines()
 message_time = {}
 settings = {}
 with open('auto\\planetlist.txt', 'r') as file:
@@ -28,14 +25,14 @@ with open('auto\\stratlist.txt', 'r') as file:
 
 #initiate bot
 intents = discord.Intents.default()
-intents.message_content = True
 descrip = '''A discord bot to view on-demand statistics from the game Helldrivers 2. Includes Planet info, Major Orders, Dispatches from Super Earth, and more.\n/report for bugs or feature requests.\nDiscord Contact: @sky.fury'''
 #bot = commands.Bot(command_prefix='!', description=descrip, intents=intents)
 
 class DemBot(commands.Bot):
            
     async def setup_hook(self):
-        await self.add_cog(DataCog(bot))
+        pass
+        #await self.add_cog(DataCog(bot))
     
     @commands.Cog.listener()
     async def on_ready(self):
@@ -45,36 +42,36 @@ class DemBot(commands.Bot):
     async def on_connect(self):
         await self.change_presence(activity=discord.CustomActivity(name='Spreading Managed Democracy'))
             
-    @commands.Cog.listener('on_message')
-    async def on_message(self, message):
-        # now = dt.now()
-        #print(message.content)
-        if bool(re.search('democracy|democrat', message.content.lower())) == True:
-            #don't respond to ourselves
-            try:
-                if message.author == self.user:
-                    return
-                #prevent democratic spam unless last message sent on a server by the bot was over a min prior
-                #tracks the last 5 response sent from the inpiration list to prevent the same message being sent in the same server within the last 5 responses sent
-                elif (message.guild.id in message_time.keys()) == False:
-                    i = random.randint(1,len(inspiration))
-                    message_time[message.guild.id] = {'time':'','reply': [99,99,99,99,99] }
-                    message_time[message.guild.id]['time'] = dt.now()
-                    message_time[message.guild.id]['reply'][4] = i
-                    #print (str(message.guild.id),str(message_time[message.guild.id]))
-                    await message.channel.send(inspiration[i-1][0:-1])
-                elif (message.guild.id in message_time.keys()) == True:
-                    if (dt.now() - message_time[message.guild.id]['time']).total_seconds() > 60:
-                        message_time[message.guild.id]['time'] = dt.now()
-                        x = random.choice([e for e in range(len(inspiration)) if e not in message_time[message.guild.id]['reply']])
-                        for a in range(4):
-                            message_time[message.guild.id]['reply'][a] = message_time[message.guild.id]['reply'][a+1] 
-                        message_time[message.guild.id]['reply'][4] = x  
-                        #print(str(message.guild.id),(str(message_time[message.guild.id]['reply'])))
-                        await message.channel.send(inspiration[x][0:-1])
-            except AttributeError: #respond to messages in DMs since they have no guildID
-                i = random.randint(1,len(inspiration))
-                await message.channel.send(inspiration[i-1][0:-1])
+    # @commands.Cog.listener('on_message')
+    # async def on_message(self, message):
+    #     # now = dt.now()
+    #     #print(message.content)
+    #     if bool(re.search('democracy|democrat', message.content.lower())) == True:
+    #         #don't respond to ourselves
+    #         try:
+    #             if message.author == self.user:
+    #                 return
+    #             #prevent democratic spam unless last message sent on a server by the bot was over a min prior
+    #             #tracks the last 5 response sent from the inpiration list to prevent the same message being sent in the same server within the last 5 responses sent
+    #             elif (message.guild.id in message_time.keys()) == False:
+    #                 i = random.randint(1,len(inspiration))
+    #                 message_time[message.guild.id] = {'time':'','reply': [99,99,99,99,99] }
+    #                 message_time[message.guild.id]['time'] = dt.now()
+    #                 message_time[message.guild.id]['reply'][4] = i
+    #                 #print (str(message.guild.id),str(message_time[message.guild.id]))
+    #                 await message.channel.send(inspiration[i-1][0:-1])
+    #             elif (message.guild.id in message_time.keys()) == True:
+    #                 if (dt.now() - message_time[message.guild.id]['time']).total_seconds() > 60:
+    #                     message_time[message.guild.id]['time'] = dt.now()
+    #                     x = random.choice([e for e in range(len(inspiration)) if e not in message_time[message.guild.id]['reply']])
+    #                     for a in range(4):
+    #                         message_time[message.guild.id]['reply'][a] = message_time[message.guild.id]['reply'][a+1] 
+    #                     message_time[message.guild.id]['reply'][4] = x  
+    #                     #print(str(message.guild.id),(str(message_time[message.guild.id]['reply'])))
+    #                     await message.channel.send(inspiration[x][0:-1])
+    #         except AttributeError: #respond to messages in DMs since they have no guildID
+    #             i = random.randint(1,len(inspiration))
+    #             await message.channel.send(inspiration[i-1][0:-1])
                 
 class DataCog(commands.Cog):
     def __init__(self, bot):
@@ -136,23 +133,21 @@ async def war(interaction: discord.Interaction, public: bool=False):
 async def orders(interaction: discord.Interaction, public: bool=False):
     await interaction.response.defer(ephemeral=not public, thinking=True)
     msg = await bf.orders()
-    await interaction.followup.send(embed=msg)
+    await interaction.followup.send(embeds=msg)
 
 @bot.tree.command(name='dispatch', description='Displays the [number] most recent dispatch message(s) from Super Earth. Defaults to 1')
 @app_commands.describe(number='The number of messages requested.', public='Select True to share the response in this channel.')
 async def dispatch(interaction: discord.Interaction, number: int=1, public: bool=False):
     #displays latest dispatch messages
     await interaction.response.defer(ephemeral=not public, thinking=True)
-    query='SELECT d.published, d.message FROM dispatch d ORDER BY d.id DESC OFFSET 0 LIMIT '+ str(number)
+    query= f'SELECT d.published, d.message FROM dispatch d ORDER BY d.id DESC OFFSET 0 LIMIT {number}'
     results = await bf.db_query('dispatch', query)
-    msg = discord.Embed(title='**--Latest Message(s) from Super Earth--**')
+    msg = []
     for item in results:
-        msg.add_field(name='Date: ' + str(dt.strptime(item['published'][0:10], '%Y-%m-%d') + relativedelta(years=160))[0:10], value= item['message'], inline=False) #adds 160 years to date to make message more thematic
-    if len(msg) <= 6000:
-        await interaction.followup.send(embed=msg)
-    elif len(msg) > 6000:
-        msg = discord.Embed(title='',desctiption='Super Earth cannot grant your information request at this time. Request fewer dispatches.')
-        await interaction.followup.send(embed= msg)
+        msg.append(discord.Embed(title=str(dt.strptime(item['published'][0:10], '%Y-%m-%d') + relativedelta(years=160))[0:10])) 
+        msg[-1].add_field(name='', value= item['message'], inline=False) 
+    await interaction.followup.send(embeds=msg)
+
 
 @bot.tree.command(name='planets',description='Displays information on a specific planet') #gathers liberation info and stats on a specific planet
 @app_commands.describe(name='The name of the planet to view.', public='Select True to share the response in this channel.')
@@ -218,4 +213,4 @@ async def sync(self, ctx):
         await self.tree.sync() 
         await ctx.channel.send(content='Commands Synchronized') 
                
-bot.run(token) #starts bot and begins listening for events and commands
+bot.run(bot_token) #starts bot and begins listening for events and commands
