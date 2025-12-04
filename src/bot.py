@@ -1,5 +1,6 @@
+from encodings.punycode import selective_find
 import bot_func as bf
-import discord 
+import discord, sys, json
 from discord import app_commands
 from discord.ext import commands, tasks
 from dateutil.relativedelta import relativedelta
@@ -8,18 +9,24 @@ from azure.core import exceptions
 
 #examples https://github.com/Rapptz/discord.py/tree/master/examples
 
+if len(sys.argv) > 1: #testing to access MO Data
+    if sys.argv[1] == '--MOData'.lower():
+        response = bf.session.get("https://api.helldivers2.dev/api/v1/assignments")
+        print(json.dumps(response.json(), indent=2))
+        sys.exit()
+
 token = bf.config['BOT_TOKEN'] 
 bot_test_token = bf.config['BOT_TEST_TOKEN'] #token for testing bot commands in a private server
 #inspiration = open('liberty.txt', 'r').readlines()
 message_time = {}
 settings = {}
-with open('auto\\planetlist.txt', 'r') as file:
+with open('../auto/planetlist.txt', 'r') as file:
     planetlist = file.read().split(', ')
     file.close()
-with open('auto\\sectorlist.txt', 'r') as file:
+with open('../auto/sectorlist.txt', 'r') as file:
     sectorlist = file.read().split(', ')
     file.close()
-with open('auto\\stratlist.txt', 'r') as file:
+with open('../auto/stratlist.txt', 'r') as file:
     stratlist = file.read().split(', ')
     file.close()
 
@@ -30,9 +37,9 @@ descrip = '''A discord bot to view on-demand statistics from the game Helldriver
 
 class DemBot(commands.Bot):
            
-    async def setup_hook(self):
-        pass
-        #await self.add_cog(DataCog(bot))
+    async def setup_hook(self): #uncommment when testing
+        # pass
+        await self.add_cog(DataCog(self))
     
     @commands.Cog.listener()
     async def on_ready(self):
@@ -135,11 +142,13 @@ async def orders(interaction: discord.Interaction, public: bool=False):
     msg = await bf.orders()
     await interaction.followup.send(embeds=msg)
 
-@bot.tree.command(name='dispatch', description='Displays the [number] most recent dispatch message(s) from Super Earth. Defaults to 1')
+@bot.tree.command(name='dispatch', description='Displays the [number] most recent dispatch message(s) from Super Earth. Defaults to 1, max 10')
 @app_commands.describe(number='The number of messages requested.', public='Select True to share the response in this channel.')
 async def dispatch(interaction: discord.Interaction, number: int=1, public: bool=False):
     #displays latest dispatch messages
     await interaction.response.defer(ephemeral=not public, thinking=True)
+    if number > 10:
+        await interaction.followup.send(embed = discord.Embed(title="--Error--", description="Maximum number of dispatch messages is 10."))
     query= f'SELECT d.published, d.message FROM dispatch d ORDER BY d.id DESC OFFSET 0 LIMIT {number}'
     results = await bf.db_query('dispatch', query)
     msg = []
@@ -213,8 +222,4 @@ async def sync(self, ctx):
         await self.tree.sync() 
         await ctx.channel.send(content='Commands Synchronized') 
                
-<<<<<<< HEAD
-bot.run(bot_token) #starts bot and begins listening for events and commands
-=======
 bot.run(bot_test_token) #starts bot and begins listening for events and commands
->>>>>>> 4664b63 (Updated for new MO. autocomplete brought in line with current uses of session.)
