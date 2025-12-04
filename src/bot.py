@@ -213,4 +213,8 @@ async def sync(self, ctx):
         await self.tree.sync() 
         await ctx.channel.send(content='Commands Synchronized') 
                
+<<<<<<< HEAD
 bot.run(bot_token) #starts bot and begins listening for events and commands
+=======
+bot.run(bot_test_token) #starts bot and begins listening for events and commands
+>>>>>>> 4664b63 (Updated for new MO. autocomplete brought in line with current uses of session.)

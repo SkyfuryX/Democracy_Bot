@@ -394,4 +394,8 @@ async def campaign_and_planet_data():
         item['planet']['id'] = str(item['planet']['index'])
         count += 1
     await db_upload('planets', data, 1)
+<<<<<<< HEAD
     print(str(count) + ' Planets Updated')
+=======
+    print(str(count) + ' Planets Updated')
+>>>>>>> 4664b63 (Updated for new MO. autocomplete brought in line with current uses of session.)
