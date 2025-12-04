@@ -222,7 +222,7 @@ async def orders():
     return msg
     
 async def planet(name):
-    query= f'SELECT * FROM planets p WHERE p.name = "{name}"'
+    query= f'SELECT * FROM planets p WHERE p.name = "{name}.u"'
     results = await db_query('planets', query)
     for item in results:
         if item['currentOwner'] == 'Humans':
@@ -377,6 +377,7 @@ async def planet_data():
     data[107]['name'] = 'POPLI IX' #manual correction to prevent UTF-8 encoding errors
     count = 0
     for item in data: #inserts new items into db
+        item['name'] = item['name'].upper()
         item['id'] = str(item['index'])
         count += 1
     await db_upload('planets', data, 0)
