@@ -3,7 +3,7 @@ from datetime import datetime as dt, timezone
 from dotenv import dotenv_values
 from azure.cosmos.aio import CosmosClient
 
-config = dotenv_values('../.env')
+config = dotenv_values('./.env')
 #load_dotenv(encoding="latin-1") #loads environment variables from .env file
 db_uri = config['ACCOUNT_URI']
 db_key = config['ACCOUNT_KEY']
@@ -16,7 +16,7 @@ session.headers.update(header)
 factions = {1:'Super Earth', 2: 'Terminids', 3:'Automatons', 4:'Illuminate'}
 difficulty = {1:'Trivial', 2:'Easy', 3:'Medium', 4:'Challenging', 5:'Hard', 6:'Extreme', 7:'Suicide Mission', 8:'Impossible', 9:'Helldive', 10:'Super Helldive'}
 
-with open('../auto/planetlist.txt', 'r') as file:
+with open('./auto/planetlist.txt', 'r') as file:
     planetlist = file.read().split(', ')
     file.close()
 
@@ -222,7 +222,7 @@ async def orders():
     return msg
     
 async def planet(name):
-    query= f'SELECT * FROM planets p WHERE p.name = "{name}.u"'
+    query= f'SELECT * FROM planets p WHERE p.name ="{name.upper()}"'
     results = await db_query('planets', query)
     for item in results:
         if item['currentOwner'] == 'Humans':

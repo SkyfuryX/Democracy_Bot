@@ -9,24 +9,18 @@ from azure.core import exceptions
 
 #examples https://github.com/Rapptz/discord.py/tree/master/examples
 
-if len(sys.argv) > 1: #testing to access MO Data
-    if sys.argv[1] == '--MOData'.lower():
-        response = bf.session.get("https://api.helldivers2.dev/api/v1/assignments")
-        print(json.dumps(response.json(), indent=2))
-        sys.exit()
-
 token = bf.config['BOT_TOKEN'] 
 bot_test_token = bf.config['BOT_TEST_TOKEN'] #token for testing bot commands in a private server
 #inspiration = open('liberty.txt', 'r').readlines()
 message_time = {}
 settings = {}
-with open('../auto/planetlist.txt', 'r') as file:
+with open('./auto/planetlist.txt', 'r') as file:
     planetlist = file.read().split(', ')
     file.close()
-with open('../auto/sectorlist.txt', 'r') as file:
+with open('./auto/sectorlist.txt', 'r') as file:
     sectorlist = file.read().split(', ')
     file.close()
-with open('../auto/stratlist.txt', 'r') as file:
+with open('./auto/stratlist.txt', 'r') as file:
     stratlist = file.read().split(', ')
     file.close()
 
@@ -37,10 +31,12 @@ descrip = '''A discord bot to view on-demand statistics from the game Helldriver
 
 class DemBot(commands.Bot):
            
-    async def setup_hook(self): #uncommment when testing
-        # pass
-        await self.add_cog(DataCog(self))
-    
+    async def setup_hook(self):
+        if '--test' in sys.argv:
+            pass
+        else:
+            await self.add_cog(DataCog(self))
+        
     @commands.Cog.listener()
     async def on_ready(self):
         print('Logged on as', self.user)
@@ -80,7 +76,7 @@ class DemBot(commands.Bot):
     #             i = random.randint(1,len(inspiration))
     #             await message.channel.send(inspiration[i-1][0:-1])
                 
-class DataCog(commands.Cog):
+class DataCog(commands.Cog, name='Data'):
     def __init__(self, bot):
         self.bot = bot
     
@@ -202,7 +198,7 @@ async def stratagems_autocomplete(
     try:
         return [
             app_commands.Choice(name=stratagem, value=stratagem)
-            for stratagem in stratlist if current.lower() in stratagem.lower()]
+            for stratagem in stratlist if current.lower() in stratagem.lower()][:25]
     except discord.errors.HTTPException:
         pass
 
@@ -222,4 +218,12 @@ async def sync(self, ctx):
         await self.tree.sync() 
         await ctx.channel.send(content='Commands Synchronized') 
                
-bot.run(bot_test_token) #starts bot and begins listening for events and commands
+ #testing to access MO Data
+if'--MOData'.lower() in sys.argv:
+    response = bf.session.get("https://api.helldivers2.dev/api/v1/assignments")
+    print(json.dumps(response.json(), indent=2))
+    sys.exit()
+elif '--test'.lower() in sys.argv:
+    bot.run(bot_test_token)
+else:
+    bot.run(token) #starts bot and begins listening for events and commands
