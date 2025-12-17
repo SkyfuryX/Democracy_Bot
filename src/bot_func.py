@@ -208,7 +208,7 @@ async def orders():
                 print('Error in Orders Task Parsing: ' + str(e))
                 msg[-1].add_field(name= f'ERROR:', value= f'Collecting data from Super Earth')                
         if len(planetIDs) > 0: # Adds planet progress for tasks 11,13
-            query = 'SELECT p.name, p.currentOwner, p.maxHealth, p.health FROM planets p WHERE p.index IN ('+', '.join(planetIDs)+')'
+            query = f'SELECT p.name, p.currentOwner, p.maxHealth, p.health FROM planets p WHERE p.index IN ({', '.join(planetIDs)})'
             results = await db_query('planets', query)
             for item in results:
                 if item['currentOwner'] == 'Humans' and (item['health']/item['maxHealth']) == 1:
@@ -222,7 +222,7 @@ async def orders():
     return msg
     
 async def planet(name):
-    query= f'SELECT * FROM planets p WHERE p.name ="{name.upper()}"'
+    query= f'SELECT * FROM planets p WHERE p.name ="{name}"'
     results = await db_query('planets', query)
     for item in results:
         if item['currentOwner'] == 'Humans':
@@ -377,7 +377,6 @@ async def planet_data():
     data[107]['name'] = 'POPLI IX' #manual correction to prevent UTF-8 encoding errors
     count = 0
     for item in data: #inserts new items into db
-        item['name'] = item['name'].upper()
         item['id'] = str(item['index'])
         count += 1
     await db_upload('planets', data, 0)

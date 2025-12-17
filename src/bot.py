@@ -169,7 +169,7 @@ async def planets_autocomplete(
     try:
         return [
             app_commands.Choice(name=planet, value=planet)
-            for planet in planetlist if current.upper() in planet]
+            for planet in planetlist if current.upper() in planet.upper()]
     except discord.errors.HTTPException:
         print('Too Many Autocomplete Results')
 
