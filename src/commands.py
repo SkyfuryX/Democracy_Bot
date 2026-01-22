@@ -105,7 +105,7 @@ class CommandCog(commands.Cog, name="Commands"):
         
     @app_commands.command(name='inspiration', description='Brings you quotes from the front lines across the galaxy!')
     async def inspirtation(self, interaction: discord.Interaction):
-        await interaction.response.defer(ephemeral=False, thinking=True)
+        await interaction.response.defer(ephemeral=True, thinking=True)
         userid = interaction.user.id
         if userid not in self.inspiration_tracker.keys():
             i = random.randint(0,len(inspiration)-1)

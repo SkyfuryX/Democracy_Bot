@@ -30,8 +30,8 @@ async def db_upload(cont_name, data, type: int):
                     await container.upsert_item(item['planet'])
 
 async def db_delete(cont_name, query):
-    async with CosmosClient(url=db_uri, credential=db_key) as dlclient:
-        database =  dlclient.get_database_client('democracy_bot')
+    async with CosmosClient(url=db_uri, credential=db_key) as dbclient:
+        database =  dbclient.get_database_client(db_client)
         container = database.get_container_client(cont_name)
         results = [item async for item in container.query_items(query=query)]
         count = 0
