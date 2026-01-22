@@ -53,7 +53,6 @@ class CommandCog(commands.Cog, name="Commands"):
             msg[-1].add_field(name='', value= item['message'], inline=False) 
         await interaction.followup.send(embeds=msg)
 
-
     @app_commands.command(name='planets',description='Displays information on a specific planet') #gathers liberation info and stats on a specific planet
     @app_commands.describe(name='The name of the planet to view.', public='Select True to share the response in this channel.')
     async def planets(self, interaction: discord.Interaction, name: str, public: bool=False):
@@ -104,22 +103,21 @@ class CommandCog(commands.Cog, name="Commands"):
         except discord.errors.HTTPException:
             pass    
         
-    @app_commands.command('inspiration')
+    @app_commands.command(name='inspiration', description='Brings you quotes from the front lines across the galaxy!')
     async def inspirtation(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=False, thinking=True)
         userid = interaction.user.id
-        if userid not in self.message.keys():
+        if userid not in self.inspiration_tracker.keys():
             i = random.randint(0,len(inspiration)-1)
             self.inspiration_tracker[userid] = [99,99,99,99,99]
             self.inspiration_tracker[userid][4] = i
-            await interaction.followup.response(embed=discord.Embed(title=inspiration[i].strip()))
-        elif userid in self.message_time.keys():
-                x = random.choice([e for e in range(len(inspiration)) if e not in self.inspiration_tracker[userid]])
-                for a in range(4):
-                    self.inspiration_tracker[userid][a] = self.inspiration_tracker[userid][a+1] 
-                self.inspiration_tracker[message.guild.id]['reply'][4] = x  
-                #print(str(message.guild.id),(str(message_time[message.guild.id]['reply'])))
-                await interaction.followup.response(embed=discord.Embed(title=inspiration[x].strip()))
+            await interaction.followup.send(embed=discord.Embed(title=inspiration[i].strip()))
+        else:
+            x = random.choice([e for e in range(len(inspiration)) if e not in self.inspiration_tracker[userid]])
+            for a in range(4):
+                self.inspiration_tracker[userid][a] = self.inspiration_tracker[userid][a+1] 
+            self.inspiration_tracker[userid][4] = x  
+            await interaction.followup.send(embed=discord.Embed(title=inspiration[x].strip()))
     
     @app_commands.command(name='report', description='Issues the F-33D form link to provide feedback to Super Earth High Command')
     async def report(self, interaction: discord.Interaction):

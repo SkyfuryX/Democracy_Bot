@@ -2,6 +2,7 @@ import re, math, discord, requests, ast, os
 from datetime import datetime as dt, timezone
 from dotenv import dotenv_values
 from azure.cosmos.aio import CosmosClient
+from database import db_query
 
 config = dotenv_values('./.env')
 #load_dotenv(encoding="latin-1") #loads environment variables from .env file
@@ -25,43 +26,6 @@ with open('./auto/stratlist.txt', 'r') as file:
 
 factions = {1:'Super Earth', 2: 'Terminids', 3:'Automatons', 4:'Illuminate'}
 difficulty = {1:'Trivial', 2:'Easy', 3:'Medium', 4:'Challenging', 5:'Hard', 6:'Extreme', 7:'Suicide Mission', 8:'Impossible', 9:'Helldive', 10:'Super Helldive'}
-
-with open('./auto/planetlist.txt', 'r') as file:
-    planetlist = file.read().split(', ')
-    file.close()
-
-# DATABASE FUNCTIONS
-async def db_query(cont_name, db_query):
-    async with CosmosClient(url=db_uri, credential=db_key) as qclient:
-        database =  qclient.get_database_client('democracy_bot')
-        container = database.get_container_client(cont_name)
-        results = [item async for item in container.query_items(query=db_query)]
-        return results
-
-async def db_upload(cont_name, data, type: int):
-    async with CosmosClient(url=db_uri, credential=db_key) as upclient:
-        await upclient.__aenter__()
-        database =  upclient.get_database_client('democracy_bot')
-        container = database.get_container_client(cont_name)
-        if cont_name == 'war_status':
-            await container.upsert_item(data)
-        else:
-            for item in data:
-                if type == 0:
-                    await container.upsert_item(item)
-                elif type == 1:
-                    await container.upsert_item(item['planet'])
-
-async def db_delete(cont_name, query):
-    async with CosmosClient(url=db_uri, credential=db_key) as dlclient:
-        database =  dlclient.get_database_client('democracy_bot')
-        container = database.get_container_client(cont_name)
-        results = [item async for item in container.query_items(query=query)]
-        count = 0
-        for item in results:
-            await container.delete_item(item, partition_key=item['name'])
-            count += 1
-        return count
 
 #MISC FUNCTION
 async def commas(number):
