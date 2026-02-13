@@ -92,13 +92,12 @@ async def orders():
             msg[-1].add_field(name='', value= f"**{order['briefing']}**", inline = False)
             msg[-1].add_field(name='', value= f"order{['description']}", inline = False)
         planetIDs = []
-        i=0
-        for task in order['tasks']: # Handles task types 2,3,7,9,11,12,13,15
+        for i, task in enumerate(order['tasks']): # Handles task types 2,3,7,9,11,12,13,15
             try:
+                # TODO - Change from if/elif to switch statements
                 if task['type'] == 11 or task['type'] == 13: #Liberate/Defend specific planet
                     if task['values'][2] not in planetIDs:
                         planetIDs.append(str(task['values'][2]))
-                    i += 1
                 elif task['type'] == 2: # Sample Collections
                     if task['values'][8] == 0: #Faction-Specific
                         if task['values'][4] == 3992382197:
@@ -110,7 +109,6 @@ async def orders():
                             msg[-1].add_field(name=f"Common Samples collected on {planetlist[task['values'][8]]}:",value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
                         elif task['values'][4] == 2985106497:
                             msg[-1].add_field(name=f"Rare Samples collected on {planetlist[task['values'][8]]}:",value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    i += 1
                 elif task['type'] == 3: #Value-Based
                     #Enemies
                     if task['values'][3] == 1379865898: #Bile Spewers
@@ -141,6 +139,8 @@ async def orders():
                         msg[-1].add_field(name='Fleshmobs:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
                     elif task['values'][3] == 3097344451: #Leviathans
                         msg[-1].add_field(name='Leviathans:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")                                                                                
+                    elif task['values'][3] == 2651633799: #Chargers
+                        msg[-1].add_field(name='Chargers:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")                                                                                                    
                     #Weapons
                     elif task['values'][5] == 1978117092: #Stalwart
                         msg[-1].add_field(name='Stalwart Kills:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
@@ -150,7 +150,6 @@ async def orders():
                         msg[-1].add_field(name='Heavy Machine Gun Kills:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
                     else: #Objective not yet defined
                         msg[-1].add_field(name='Progress:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    i += 1
                 elif task['type'] == 7: #Mission Extractions
                     msg[-1].add_field(name= f'Extract from a successful mission against {factions[task["values"][0]]} {task["values"][2]} times:',
                                 value= f'{str(await commas(order["progress"][i]))} / {str(await commas(task["values"][2]))} - {str(abs(round((order["progress"][i]/task["values"][2])*100, 2)))}%')
@@ -163,27 +162,27 @@ async def orders():
                         msg[-1].add_field(name='Defend ' + str(task['values'][0]) + ' Illuminate Attack(s):',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][0])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][0])*100, 2))) + '%')
                     else:
                         msg[-1].add_field(name='Defend ' + str(task['values'][0]) + ' Attack(s):',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][0])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][0])*100, 2))) + '%')
-                    i += 1
                 elif task['type'] == 9:
                     if task["values"][0] == 0:
                         msg[-1].add_field(name= f'Complete an Operation on {difficulty[task["values"][3]]} difficulty or higher:',
                                 value= f'{str(await commas(order["progress"][i]))} / {str(await commas(task["values"][1]))} - {str(abs(round((order["progress"][i]/task["values"][1])*100, 2)))}%')
+                    elif task["values"][0] == 2:
+                        msg[-1].add_field(name= f'Complete an Operation against the {factions[task["values"][0]]} {task["values"][1]} times.',
+                                value= f'{str(await commas(order["progress"][i]))} / {str(await commas(task["values"][1]))} - {str(abs(round((order["progress"][i]/task["values"][1])*100, 2)))}%')
                     elif task["values"][0] == 3:
-                        msg[-1].add_field(name= f'Complete Operations on {planetlist[task["values"][5]]}:',
-                                value= f'{str(await commas(order["progress"][i]))} / {str(await commas(task["values"][1]))} - {str(abs(round((order["progress"][i]/task["values"][1])*100, 2)))}%')                        
+                        msg[-1].add_field(name= f'Complete Operations on {planetlist[task["values"][8]]}:',
+                                value= f'{str(await commas(order["progress"][i]))} / {str(await commas(task["values"][2]))} - {str(abs(round((order["progress"][i]/task["values"][2])*100, 2)))}%')                        
                     else:
                         msg[-1].add_field(name= f'Complete an Operation against the {factions[task["values"][0]]} on {difficulty[task["values"][3]]} difficulty:',
                                 value= f'{str(await commas(order["progress"][i]))} / {str(await commas(task["values"][1]))} - {str(abs(round((order["progress"][i]/task["values"][1])*100, 2)))}%')
-                    i += 1
                 elif task['type'] == 15: #
                     msg[-1].add_field(name='Liberate more planets than are lost.', value='Current Progress: ' + str(order['progress'][i]))
-                    i += 1
                 else: # Handling for new tasks
                     msg[-1].add_field(name='New Objective Detected',value='Collecting Information from Super Earth. Information will be available shortly.' )
-                    i += 1
             except Exception as e:
                 print('Error in Orders Task Parsing: ' + str(e))
                 msg[-1].add_field(name= f'ERROR:', value= f'Collecting data from Super Earth')                
+        # TODO - Make into get_planets function
         if len(planetIDs) > 0: # Adds planet progress for tasks 11,13
             query = f"SELECT p.name, p.currentOwner, p.maxHealth, p.health FROM planets p WHERE p.index IN ({', '.join(planetIDs)})"
             results = await db_query('planets', query)
@@ -195,7 +194,7 @@ async def orders():
         if i % 3 != 0: # adds blank fields to keep the embed looking nicer
             for x in range(int(round(i/3,0)), 3):
                 msg[-1].add_field(name='', value='')
-        msg[-1].add_field(name='Time Remaining', value= str(timeleft.days) + ' days ' + str(hoursleft) + ' hours ' + str(minsleft) + ' minutes', inline=False)
+        msg[-1].add_field(name='Time Remaining', value= f"{timeleft.days} days, {hoursleft} hours, {minsleft} minutes", inline=False)
     return msg
     
 async def planet(name):
