@@ -94,94 +94,104 @@ async def orders():
         planetIDs = []
         for i, task in enumerate(order['tasks']): # Handles task types 2,3,7,9,11,12,13,15
             try:
-                # TODO - Change from if/elif to switch statements
-                if task['type'] == 11 or task['type'] == 13: #Liberate/Defend specific planet
-                    if task['values'][2] not in planetIDs:
-                        planetIDs.append(str(task['values'][2]))
-                elif task['type'] == 2: # Sample Collections
-                    if task['values'][8] == 0: #Faction-Specific
-                        if task['values'][4] == 3992382197:
-                            msg[-1].add_field(name=f'Common Samples collected from any planet controlled by {factions[task["values"][0]]}:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                        elif task['values'][4] == 2985106497:
-                            msg[-1].add_field(name=f'Rare Samples collected from any planet controlled by {factions[task["values"][0]]}:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")   
-                    else: #Planet-Specific
-                        if task['values'][4] == 3992382197:
-                            msg[-1].add_field(name=f"Common Samples collected on {planetlist[task['values'][8]]}:",value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                        elif task['values'][4] == 2985106497:
-                            msg[-1].add_field(name=f"Rare Samples collected on {planetlist[task['values'][8]]}:",value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                elif task['type'] == 3: #Value-Based
-                    #Enemies
-                    if task['values'][3] == 1379865898: #Bile Spewers
-                        msg[-1].add_field(name='Bile Spewers:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    elif task['values'][3] == 2058088313: #Warriors
-                        msg[-1].add_field(name='Warriors:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    elif task['values'][3] == 4211847317: #Illuminate
-                        msg[-1].add_field(name='Illuminate:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    elif task['values'][3] == 1405979473: #Voteless
-                        msg[-1].add_field(name='Voteless :',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    elif task['values'][3] == 2664856027: #Shredder Tanks
-                        msg[-1].add_field(name='Shredder Tanks:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    elif task['values'][0] == 2 and task['values'][3] == 0: #Terminids
-                        msg[-1].add_field(name='Terminids:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    elif task['values'][0] == 3 and task['values'][3] == 0: #Automatons
-                        msg[-1].add_field(name='Automatons:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    elif task['values'][0] == 4 and task['values'][3] == 0: #Illuminate
-                        msg[-1].add_field(name='Illuminate:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    elif task['values'][3] == 2514244534: #Bile Titans
-                        msg[-1].add_field(name='Bile Titans:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    elif task['values'][3] == 793026793: #Shriekers
-                        msg[-1].add_field(name='Shriekers:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    elif task['values'][3] == 1046000873: #Impalers
-                        msg[-1].add_field(name='Impalers:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    elif task['values'][3] == 1153658728: #Factory Striders
-                        msg[-1].add_field(name='Factory Striders:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    elif task['values'][3] == 2880434041: #Fleshmobs
-                        msg[-1].add_field(name='Fleshmobs:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    elif task['values'][3] == 3097344451: #Leviathans
-                        msg[-1].add_field(name='Leviathans:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")                                                                                
-                    elif task['values'][3] == 2651633799: #Chargers
-                        msg[-1].add_field(name='Chargers:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")                                                                                                    
-                    #Weapons
-                    elif task['values'][5] == 1978117092: #Stalwart
-                        msg[-1].add_field(name='Stalwart Kills:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    elif task['values'][5] == 934703916: #Machine Gun
-                        msg[-1].add_field(name='Machine Gun Kills:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    elif task['values'][5] == 4038802832: #Machine Gun
-                        msg[-1].add_field(name='Heavy Machine Gun Kills:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                    else: #Objective not yet defined
-                        msg[-1].add_field(name='Progress:',value= f"{await commas(order['progress'][i])} / {await commas(task['values'][2])} - {abs(round((order['progress'][i]/task['values'][2])*100, 2))}%")
-                elif task['type'] == 7: #Mission Extractions
-                    msg[-1].add_field(name= f'Extract from a successful mission against {factions[task["values"][0]]} {task["values"][2]} times:',
-                                value= f'{str(await commas(order["progress"][i]))} / {str(await commas(task["values"][2]))} - {str(abs(round((order["progress"][i]/task["values"][2])*100, 2)))}%')
-                elif task['type'] == 12: #Planet Defenses
-                    if task['values'][1] == 2:
-                        msg[-1].add_field(name='Defend ' + str(task['values'][0]) + ' Terminid Attack(s):',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][0])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][0])*100, 2))) + '%')
-                    elif task['values'][1] == 3:
-                        msg[-1].add_field(name='Defend ' + str(task['values'][0]) + ' Automaton Attack(s):',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][0])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][0])*100, 2))) + '%')
-                    elif task['values'][1] == 4:
-                        msg[-1].add_field(name='Defend ' + str(task['values'][0]) + ' Illuminate Attack(s):',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][0])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][0])*100, 2))) + '%')
-                    else:
-                        msg[-1].add_field(name='Defend ' + str(task['values'][0]) + ' Attack(s):',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(task['values'][0])) + ' - ' + str(abs(round((order['progress'][i]/task['values'][0])*100, 2))) + '%')
-                elif task['type'] == 9:
-                    if task["values"][0] == 0:
-                        msg[-1].add_field(name= f'Complete an Operation on {difficulty[task["values"][3]]} difficulty or higher:',
-                                value= f'{str(await commas(order["progress"][i]))} / {str(await commas(task["values"][1]))} - {str(abs(round((order["progress"][i]/task["values"][1])*100, 2)))}%')
-                    elif task["values"][0] == 2:
-                        msg[-1].add_field(name= f'Complete an Operation against the {factions[task["values"][0]]} {task["values"][1]} times.',
-                                value= f'{str(await commas(order["progress"][i]))} / {str(await commas(task["values"][1]))} - {str(abs(round((order["progress"][i]/task["values"][1])*100, 2)))}%')
-                    elif task["values"][0] == 3:
-                        msg[-1].add_field(name= f'Complete Operations on {planetlist[task["values"][8]]}:',
-                                value= f'{str(await commas(order["progress"][i]))} / {str(await commas(task["values"][2]))} - {str(abs(round((order["progress"][i]/task["values"][2])*100, 2)))}%')                        
-                    else:
-                        msg[-1].add_field(name= f'Complete an Operation against the {factions[task["values"][0]]} on {difficulty[task["values"][3]]} difficulty:',
-                                value= f'{str(await commas(order["progress"][i]))} / {str(await commas(task["values"][1]))} - {str(abs(round((order["progress"][i]/task["values"][1])*100, 2)))}%')
-                elif task['type'] == 15: #
-                    msg[-1].add_field(name='Liberate more planets than are lost.', value='Current Progress: ' + str(order['progress'][i]))
-                else: # Handling for new tasks
-                    msg[-1].add_field(name='New Objective Detected',value='Collecting Information from Super Earth. Information will be available shortly.' )
+                values = task['values']
+                match task['type']:
+                    case 2: # Sample Collections
+                        match values[8]: 
+                            case 0: # Faction-Specific
+                                match values[4]:
+                                    case 3992382197:
+                                        msg[-1].add_field(name=f'Common Samples collected from any planet controlled by {factions[values[0]]}:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%") 
+                                    case 2985106497:
+                                        msg[-1].add_field(name=f'Rare Samples collected from any planet controlled by {factions[values[0]]}:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")   
+                            case _:
+                                match values[4]:
+                                    case 3992382197:
+                                        msg[-1].add_field(name=f"Common Samples collected on {planetlist[values[8]]}:",value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")                                        
+                                    case 2985106497:
+                                        msg[-1].add_field(name=f"Rare Samples collected on {planetlist[values[8]]}:",value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                    case 3: #Value-Based
+                        match values[3]: #Defeat Specific Enemies
+                            case 0 if values[0] in (2,3,4):
+                                match values[0]:
+                                    case 2: #Terminids
+                                        msg[-1].add_field(name='Terminids:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")        
+                                    case 3: #Automatons
+                                        msg[-1].add_field(name='Automatons:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")                                        
+                                    case 4: #Illuminate
+                                        msg[-1].add_field(name='Illuminate:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                            case 1379865898: #Bile Spewers
+                                msg[-1].add_field(name='Bile Spewers:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                            case 2058088313: #Warriors
+                                msg[-1].add_field(name='Warriors:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                            case 4211847317: #Illuminate
+                                msg[-1].add_field(name='Illuminate:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                            case 1405979473: #Voteless
+                                msg[-1].add_field(name='Voteless :',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                            case 2664856027: #Shredder Tanks
+                                msg[-1].add_field(name='Shredder Tanks:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                            case 2514244534: #Bile Titans
+                                msg[-1].add_field(name='Bile Titans:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                            case 793026793: #Shriekers
+                                msg[-1].add_field(name='Shriekers:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                            case 1046000873: #Impalers
+                                msg[-1].add_field(name='Impalers:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                            case 1153658728: #Factory Striders
+                                msg[-1].add_field(name='Factory Striders:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                            case 2880434041: #Fleshmobs
+                                msg[-1].add_field(name='Fleshmobs:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                            case 3097344451: #Leviathans
+                                msg[-1].add_field(name='Leviathans:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")                                                                                
+                            case 2651633799: #Chargers
+                                msg[-1].add_field(name='Chargers:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")                                                                                                    
+                            case _:
+                                match values[5]: #Kills using specific weapons
+                                    case 1978117092: #Stalwart
+                                        msg[-1].add_field(name='Stalwart Kills:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                                    case 934703916: #Machine Gun
+                                        msg[-1].add_field(name='Machine Gun Kills:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                                    case 4038802832: #Heavy Machine Gun
+                                        msg[-1].add_field(name='Heavy Machine Gun Kills:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                                    case _: #Objective not yet defined
+                                        msg[-1].add_field(name='Progress:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                    case 7: #Mission Extractions
+                        msg[-1].add_field(name= f'Extract from a successful mission against {factions[values[0]]} {values[2]} times:',
+                            value= f'{await commas(order["progress"][i])} / {await commas(values[2])} - {abs(round((order["progress"][i]/values[2])*100, 2))}%')
+                    case 9:
+                        match values[0]:
+                            case 0:
+                                msg[-1].add_field(name= f'Complete an Operation on {difficulty[values[3]]} difficulty or higher:',
+                                    value= f"{await commas(order['progress'][i])} / {await commas(values[1])} - {abs(round((order['progress'][i]/values[1])*100, 2))}%")
+                            case 2:
+                                msg[-1].add_field(name= f'Complete an Operation against the {factions[values[0]]} {values[1]} times.',
+                                    value= f"{await commas(order['progress'][i])} / {await commas(values[1])} - {abs(round((order['progress'][i]/values[1])*100, 2))}%")                            
+                            case 3:
+                                msg[-1].add_field(name= f'Complete Operations on {planetlist[values[8]]}:',
+                                    value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order["progress"][i]/values[2])*100, 2))}%")                           
+                            case _:
+                                msg[-1].add_field(name= f'Complete an Operation against the {factions[values[0]]} on {difficulty[values[3]]} difficulty:',
+                                    value= f"{await commas(order['progress'][i])} / {await commas(values[1])} - {abs(round((order['progress'][i]/values[1])*100, 2))}%")
+                    case 11 | 13: #Liberate/Defend specific planet
+                        if values[2] not in planetIDs:
+                            planetIDs.append(f"{values[2]}")
+                    case 12: #Planet Defenses
+                        match values[1]:
+                            case 2:
+                                msg[-1].add_field(name='Defend ' + str(values[0]) + ' Terminid Attack(s):',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(values[0])) + ' - ' + str(abs(round((order['progress'][i]/values[0])*100, 2))) + '%')
+                            case 3:
+                                msg[-1].add_field(name='Defend ' + str(values[0]) + ' Automaton Attack(s):',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(values[0])) + ' - ' + str(abs(round((order['progress'][i]/values[0])*100, 2))) + '%')
+                            case 4:
+                                msg[-1].add_field(name='Defend ' + str(values[0]) + ' Illuminate Attack(s):',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(values[0])) + ' - ' + str(abs(round((order['progress'][i]/values[0])*100, 2))) + '%')
+                            case _:
+                                msg[-1].add_field(name='Defend ' + str(values[0]) + ' Attack(s):',value= str(await commas(order['progress'][i])) + ' / ' + str(await commas(values[0])) + ' - ' + str(abs(round((order['progress'][i]/values[0])*100, 2))) + '%')
+                    case 15: 
+                        msg[-1].add_field(name='Liberate more planets than are lost.', value='Current Progress: ' + str(order['progress'][i])) 
+                    case _: #Handling for new tasks
+                        msg[-1].add_field(name='New Objective Detected',value='Collecting Information from Super Earth. Information will be available shortly.' ) 
             except Exception as e:
                 print('Error in Orders Task Parsing: ' + str(e))
-                msg[-1].add_field(name= f'ERROR:', value= f'Collecting data from Super Earth')                
+                msg[-1].add_field(name= f'ERROR:', value= f'Collecting data from Super Earth') 
+                               
         # TODO - Make into get_planets function
         if len(planetIDs) > 0: # Adds planet progress for tasks 11,13
             query = f"SELECT p.name, p.currentOwner, p.maxHealth, p.health FROM planets p WHERE p.index IN ({', '.join(planetIDs)})"
@@ -194,7 +204,7 @@ async def orders():
         if i % 3 != 0: # adds blank fields to keep the embed looking nicer
             for x in range(int(round(i/3,0)), 3):
                 msg[-1].add_field(name='', value='')
-        msg[-1].add_field(name='Time Remaining', value= f"{timeleft.days} days, {hoursleft} hours, {minsleft} minutes", inline=False)
+        msg[-1].add_field(name='Time Remaining:', value= f"{timeleft.days} days {hoursleft} hours {minsleft} minutes", inline=False)
     return msg
     
 async def planet(name):
@@ -277,7 +287,7 @@ async def campaigns():
 
 async def stratagems(name):
     emojikeys = {'up': ':arrow_up:','down':':arrow_down:','left':':arrow_left:','right':':arrow_right:'}
-    query = 'SELECT * FROM stratagems s WHERE CONTAINS(s.name, "'+name+'", true) OFFSET 0 LIMIT 1'
+    query = f'SELECT * FROM stratagems s WHERE CONTAINS(s.name, "{name}", true) OFFSET 0 LIMIT 1'
     results = await db_query('stratagems', query)
     if len(results) == 0:
         msg = discord.Embed(title='-Stratagem Not Found-', type='rich')
