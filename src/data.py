@@ -56,7 +56,7 @@ class DataCog(commands.Cog, name='Data'):
         results = await db_query('war_status', 'SELECT StringToNumber(c.id) as idint FROM c ORDER BY c.idint DESC OFFSET 0 LIMIT 1')
         id = results[0]['idint']
 
-        now = dt.now(self)
+        now = dt.now()
         dt_formatted = now.strftime("%m-%d-%Y %H:%M:%S")
         #formats data to table schema
         data = {}
