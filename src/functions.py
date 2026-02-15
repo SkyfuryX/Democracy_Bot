@@ -94,7 +94,7 @@ async def orders():
         planetIDs = []
         for i, task in enumerate(order['tasks']): # Handles task types 2,3,7,9,11,12,13,15
             try:
-                values = task['values']
+                values, types = task['values'], task['valueTypes']
                 match task['type']:
                     case 2: # Sample Collections
                         match values[8]: 
@@ -158,19 +158,13 @@ async def orders():
                         msg[-1].add_field(name= f'Extract from a successful mission against {factions[values[0]]} {values[2]} times:',
                             value= f'{await commas(order["progress"][i])} / {await commas(values[2])} - {abs(round((order["progress"][i]/values[2])*100, 2))}%')
                     case 9:
-                        match values[0]:
+                        match values[-1]:
                             case 0:
-                                msg[-1].add_field(name= f'Complete an Operation on {difficulty[values[3]]} difficulty or higher:',
-                                    value= f"{await commas(order['progress'][i])} / {await commas(values[1])} - {abs(round((order['progress'][i]/values[1])*100, 2))}%")
-                            case 2:
-                                msg[-1].add_field(name= f'Complete an Operation against the {factions[values[0]]} {values[1]} times.',
-                                    value= f"{await commas(order['progress'][i])} / {await commas(values[1])} - {abs(round((order['progress'][i]/values[1])*100, 2))}%")                            
-                            case 3:
-                                msg[-1].add_field(name= f'Complete Operations on {planetlist[values[8]]}:',
-                                    value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order["progress"][i]/values[2])*100, 2))}%")                           
+                                msg[-1].add_field(name= f'Complete an Operation against the {factions[values[0]]} {await commas(values[types.index(3)])} times.',
+                                    value= f"{await commas(order['progress'][i])} / {await commas(values[1])} - {abs(round((order['progress'][i]/values[1])*100, 2))}%")                                 
                             case _:
-                                msg[-1].add_field(name= f'Complete an Operation against the {factions[values[0]]} on {difficulty[values[3]]} difficulty:',
-                                    value= f"{await commas(order['progress'][i])} / {await commas(values[1])} - {abs(round((order['progress'][i]/values[1])*100, 2))}%")
+                                msg[-1].add_field(name= f'Complete Operations against the {factions[values[0]]} on {planetlist[values[-1]]} {await commas(values[types.index(3)])} times.',
+                                    value= f"{await commas(order['progress'][i])} / {await commas(values[types.index(3)])} - {abs(round((order['progress'][i]/values[types.index(3)])*100, 2))}%") 
                     case 11 | 13: #Liberate/Defend specific planet
                         if values[2] not in planetIDs:
                             planetIDs.append(f"{values[2]}")
