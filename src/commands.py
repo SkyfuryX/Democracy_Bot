@@ -1,8 +1,7 @@
-from email import message
-import discord, sys, json, re, random
+import discord, random
 from discord import app_commands
-from discord.ext import commands
-from datetime import datetime as dt
+from discord.ext import commands, tasks
+from datetime import datetime as dt, timedelta, tzinfo, time
 from dateutil.relativedelta import relativedelta
 from functions import (
     war, 
@@ -23,11 +22,48 @@ class CommandCog(commands.Cog, name="Commands"):
         super().__init__()
         self.bot = bot
         self.inspiration_tracker = {}
+        self.usage = {
+            "war": 0,
+            "orders": 0,
+            "planets": 0,
+            "dispatch": 0,
+            "campaigns": 0,
+            "stratagems": 0,
+            "inspiration": 0,
+            "report": 0,            
+        }
+        
+    async def cog_load(self):
+        print('Commands loaded.')
+        self.commands_usage.start()
+       
+    async def cog_unload(self):
+        self.commands_usage.start()
+        
+    async def reset_usage(self):
+        for key in self.usage.keys():
+            self.usage[key] = 0
+
+    @tasks.loop(time=time(minute=0))
+    async def commands_usage(self):
+        data = [{
+            "id": f"{dt.now() - timedelta(hours=1)}",
+            "usage": self.usage,
+        }]
+        await db_upload("command_usage", data, 0)
+        await self.reset_usage()
+        print('Command usage uploaded')
+        
+    @commands_usage.before_loop
+    async def before_commands_usage(self):
+        await self.bot.wait_until_ready()
+        
         
     @app_commands.command(name='war',description='Display the overall stats of the current Galactic War') #shows info on the galatic war in general
     @app_commands.describe(public='Select True to share the response in this channel.')
     async def war(self, interaction: discord.Interaction, public: bool=False):
         await interaction.response.defer(ephemeral=not public, thinking=True)
+        self.usage["war"] += 1
         msg = await war()
         await interaction.followup.send(embed=msg)
 
@@ -35,6 +71,7 @@ class CommandCog(commands.Cog, name="Commands"):
     @app_commands.describe(public='Select True to share the response in this channel.')
     async def orders(self, interaction: discord.Interaction, public: bool=False):
         await interaction.response.defer(ephemeral=not public, thinking=True)
+        self.usage["orders"] += 1
         msg = await orders()
         await interaction.followup.send(embeds=msg)
 
@@ -43,6 +80,7 @@ class CommandCog(commands.Cog, name="Commands"):
     async def dispatch(self, interaction: discord.Interaction, number: int=1, public: bool=False):
         #displays latest dispatch messages
         await interaction.response.defer(ephemeral=not public, thinking=True)
+        self.usage["dispatch"] += 1
         if number > 10:
             await interaction.followup.send(embed = discord.Embed(title="--Error--", description="Maximum number of dispatch messages is 10."))
         query= f'SELECT d.published, d.message FROM dispatch d ORDER BY d.id DESC OFFSET 0 LIMIT {number}'
@@ -57,6 +95,7 @@ class CommandCog(commands.Cog, name="Commands"):
     @app_commands.describe(name='The name of the planet to view.', public='Select True to share the response in this channel.')
     async def planets(self, interaction: discord.Interaction, name: str, public: bool=False):
         await interaction.response.defer(ephemeral=not public, thinking=True)
+        self.usage["planets"] += 1
         msg = await planet(name)
         await interaction.followup.send(embed=msg)
 
@@ -77,6 +116,7 @@ class CommandCog(commands.Cog, name="Commands"):
     @app_commands.describe(public='Select True to share the response in this channel.')
     async def campaigns(self, interaction: discord.Interaction, public: bool=False):
         await interaction.response.defer(ephemeral=not public, thinking=True)
+        self.usage["campaigns"] += 1
         libcam, defcam = await campaigns()
         if len(defcam) > 25:
             await interaction.followup.send(embeds=[libcam,defcam])
@@ -87,6 +127,7 @@ class CommandCog(commands.Cog, name="Commands"):
     @app_commands.describe(name='The name of the stratagem to view.', public='Select True to share the response in channel.')
     async def stratagems(self, interaction: discord.Interaction, name: str, public: bool=False):
         await interaction.response.defer(ephemeral=not public, thinking=True)
+        self.usage["stratagems"] += 1
         msg = await stratagems(name)
         await interaction.followup.send(embed=msg)
 
@@ -106,6 +147,7 @@ class CommandCog(commands.Cog, name="Commands"):
     @app_commands.command(name='inspiration', description='Brings you quotes from the front lines across the galaxy!')
     async def inspirtation(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True, thinking=True)
+        self.usage["inspiration"] += 1
         userid = interaction.user.id
         if userid not in self.inspiration_tracker.keys():
             i = random.randint(0,len(inspiration)-1)
@@ -121,6 +163,7 @@ class CommandCog(commands.Cog, name="Commands"):
     
     @app_commands.command(name='report', description='Issues the F-33D form link to provide feedback to Super Earth High Command')
     async def report(self, interaction: discord.Interaction):
+        self.usage["report"] += 1
         msg = discord.Embed(title='--Reports to Super Earth--', description= 'Please submit bug reports and feature requests via the [Support Discord](https://discord.gg/jtcRdqsG)\n\nThank you for your service, Helldiver!', type='rich')
         await interaction.response.send_message(embed=msg, ephemeral=True)        
     
