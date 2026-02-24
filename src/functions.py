@@ -62,6 +62,7 @@ async def war():
     msg.add_field(name='Illuminate:', value=await commas(war['illuminateKills']))
     return msg
 
+#ValueTypes - 1:Faction, 3:Amount, 4:Enemy Type,  12: Planet
 async def orders():
     response = session.get("https://api.helldivers2.dev/api/v1/assignments")
     try:
@@ -306,5 +307,3 @@ async def stratagems(name):
             msg.add_field(name='Activation:', value= keys)
             msg.add_field(name='', value = '')
         return msg
-
- 

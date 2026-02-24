@@ -32,7 +32,7 @@ class DemBot(commands.Bot):
 
 bot = DemBot(command_prefix='!', description=descrip, intents=intents)
                    
-if'--MOData'.lower() in sys.argv: #print MO Data fromA API call only, does not run
+if'--MOData'.lower() in sys.argv: #print MO Data from API call only, does not run
     response = session.get("https://api.helldivers2.dev/api/v1/assignments")
     print(json.dumps(response.json(), indent=2))
     sys.exit()
