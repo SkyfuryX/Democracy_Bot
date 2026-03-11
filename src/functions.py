@@ -145,6 +145,10 @@ async def orders():
                                 msg[-1].add_field(name='Leviathans:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")                                                                                
                             case 2651633799: #Chargers
                                 msg[-1].add_field(name='Chargers:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")                                                                                                    
+                            case 23741406: #Radicals
+                                msg[-1].add_field(name='Radicals:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
+                            case 1371180916: #Agitators
+                                msg[-1].add_field(name='Agitators:',value= f"{await commas(order['progress'][i])} / {await commas(values[2])} - {abs(round((order['progress'][i]/values[2])*100, 2))}%")
                             case _:
                                 match values[5]: #Kills using specific weapons
                                     case 1978117092: #Stalwart
