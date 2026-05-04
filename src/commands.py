@@ -47,7 +47,7 @@ class CommandCog(commands.Cog, name="Commands"):
     @tasks.loop(time=time(minute=0))
     async def commands_usage(self):
         data = [{
-            "id": f"{dt.now() - timedelta(hours=1)}",
+            "id": f"{dt.now()}",
             "usage": self.usage,
         }]
         await db_upload("command_usage", data, 0)
