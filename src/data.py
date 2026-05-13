@@ -1,9 +1,9 @@
-import discord, re
+import discord, re, requests, ast
 from discord import app_commands
 from discord.ext import commands, tasks
 from datetime import datetime as dt
 from database import db_query, db_upload, db_delete
-from functions import session
+from functions import config
 
 class DataCog(commands.Cog, name='Data'):
     def __init__(self, bot):
@@ -24,13 +24,18 @@ class DataCog(commands.Cog, name='Data'):
         pass
            
     @tasks.loop(minutes=10)
-    async def primary_data(self):
-        print('10 min update started at '+ str(dt.now()))
-        await self.war_data()
-        await self.dispatch_data()
-        await self.orders_data()
-        await self.campaign_and_planet_data()
-        print('10 min update finshed at '+ str(dt.now()))
+    async def primary_data(self):        
+        with requests.Session() as sess: #seeing if this makes data updates more consistant
+            header = ast.literal_eval(config['HEADER'])
+            ast.literal_eval(config['HEADER'])
+            sess.headers.update(header)
+            
+            print('10 min update started at '+ str(dt.now()))
+            await self.war_data(sess)
+            await self.dispatch_data(sess)
+            await self.orders_data(sess)
+            await self.campaign_and_planet_data(sess)
+            print('10 min update finished at '+ str(dt.now()))
     
     @primary_data.before_loop
     async def before_upload_primary(self):
@@ -40,9 +45,14 @@ class DataCog(commands.Cog, name='Data'):
         
     @tasks.loop(minutes=60)
     async def secondary_data(self):
-        print('60 min update started at '+ str(dt.now()))
-        await self.planet_data()
-        print('60 min update finshed at '+ str(dt.now()))
+        with requests.Session() as sess: #seeing if this makes data updates more consistant by closing out the session when done.
+            header = ast.literal_eval(config['HEADER'])
+            ast.literal_eval(config['HEADER'])
+            sess.headers.update(header)
+            
+            print('60 min update started at '+ str(dt.now()))
+            await self.planet_data(sess)
+            print('60 min update finished at '+ str(dt.now()))
         
     @secondary_data.before_loop
     async def before_upload_secondary(self):
@@ -51,7 +61,7 @@ class DataCog(commands.Cog, name='Data'):
         print('Secondary Ready!')
         
 #DATA UPLOAD FUNCTIONS
-    async def war_data(self):
+    async def war_data(self, session):
         #gets only the highest ID for db key since the data doesnt have one itself
         results = await db_query('war_status', 'SELECT StringToNumber(c.id) as idint FROM c ORDER BY c.idint DESC OFFSET 0 LIMIT 1')
         id = results[0]['idint']
@@ -73,7 +83,7 @@ class DataCog(commands.Cog, name='Data'):
         print('1 War Update Recorded')
 
     #DISPATCH DATA
-    async def dispatch_data(self):
+    async def dispatch_data(self, session):
         response = session.get("https://api.helldivers2.dev/api/v1/dispatches")
         data = response.json()
 
@@ -94,7 +104,7 @@ class DataCog(commands.Cog, name='Data'):
         print(str(count) + ' New Dispatches Recorded')
 
     #PLANET DATA
-    async def planet_data(self):
+    async def planet_data(self, session):
         response = session.get("https://api.helldivers2.dev/api/v1/planets")
         data = response.json()
         data[107]['name'] = 'POPLI IX' #manual correction to prevent UTF-8 encoding errors
@@ -106,7 +116,7 @@ class DataCog(commands.Cog, name='Data'):
         print(str(count) + ' Planets Updated')
 
     #ORDERS DATA
-    async def orders_data(self):
+    async def orders_data(self, session):
         response = session.get("https://api.helldivers2.dev/api/v1/assignments")
         data = response.json()
         count = 0
@@ -119,7 +129,7 @@ class DataCog(commands.Cog, name='Data'):
             await db_upload('major_orders', data, 0)
         print(str(count) + ' Orders Updated')
 
-    async def campaign_and_planet_data(self):
+    async def campaign_and_planet_data(self, session):
         response = session.get("https://api.helldivers2.dev/api/v1/campaigns")
         data = response.json()
         campIDs = []

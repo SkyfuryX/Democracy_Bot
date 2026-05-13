@@ -5,14 +5,6 @@ from azure.cosmos.aio import CosmosClient
 from database import db_query
 
 config = dotenv_values('./.env')
-#load_dotenv(encoding="latin-1") #loads environment variables from .env file
-db_uri = config['ACCOUNT_URI']
-db_key = config['ACCOUNT_KEY']
-
-data = {}
-session = requests.Session()
-header = ast.literal_eval(config['HEADER'])
-session.headers.update(header)
 
 with open('./auto/planetlist.txt', 'r') as file:
     planetlist = file.read().split(', ')
@@ -64,7 +56,11 @@ async def war():
 
 #ValueTypes - 1:Faction, 3:Amount, 4:Enemy Type,  12: Planet
 async def orders():
-    response = session.get("https://api.helldivers2.dev/api/v1/assignments")
+    with requests.Session() as sess: #seeing if this makes data updates more consistant
+        header = ast.literal_eval(config['HEADER'])
+        ast.literal_eval(config['HEADER'])
+        sess.headers.update(header)
+        response = sess.get("https://api.helldivers2.dev/api/v1/assignments")
     try:
         if len(response.json()) == 0:
             msg = [discord.Embed(title='-Awaiting Orders from Super Earth-', type='rich')]

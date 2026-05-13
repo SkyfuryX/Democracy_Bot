@@ -1,4 +1,4 @@
-from functions import config, session
+from functions import config
 import discord, sys, json
 from discord.ext import commands
 from azure.core import exceptions

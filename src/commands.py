@@ -38,7 +38,7 @@ class CommandCog(commands.Cog, name="Commands"):
         self.commands_usage.start()
        
     async def cog_unload(self):
-        self.commands_usage.start()
+        self.commands_usage.stop()
         
     async def reset_usage(self):
         for key in self.usage.keys():
