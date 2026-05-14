@@ -73,7 +73,7 @@ class DataCog(commands.Cog, name='Data'):
         data['id'] = str(id + 1)
         data['date'] = dt_formatted
 
-        response = session.get("https://api.helldivers2.dev/api/v1/war") #Overall War data
+        response = session.get("https://api.helldivers2.dev/api/v1/war", timeout=10) #Overall War data
         war_stats = response.json()
         war_stats = war_stats['statistics']
         war_stats = {key: value for key,value in war_stats.items() if key not in ['revives','timePlayed','accuracy',]}
@@ -84,7 +84,7 @@ class DataCog(commands.Cog, name='Data'):
 
     #DISPATCH DATA
     async def dispatch_data(self, session):
-        response = session.get("https://api.helldivers2.dev/api/v1/dispatches")
+        response = session.get("https://api.helldivers2.dev/api/v1/dispatches", timeout=10)
         data = response.json()
 
         #queries for last uploaded id
@@ -105,7 +105,7 @@ class DataCog(commands.Cog, name='Data'):
 
     #PLANET DATA
     async def planet_data(self, session):
-        response = session.get("https://api.helldivers2.dev/api/v1/planets")
+        response = session.get("https://api.helldivers2.dev/api/v1/planets", timeout=10)
         data = response.json()
         data[107]['name'] = 'POPLI IX' #manual correction to prevent UTF-8 encoding errors
         count = 0
@@ -117,7 +117,7 @@ class DataCog(commands.Cog, name='Data'):
 
     #ORDERS DATA
     async def orders_data(self, session):
-        response = session.get("https://api.helldivers2.dev/api/v1/assignments")
+        response = session.get("https://api.helldivers2.dev/api/v1/assignments", timeout=10)
         data = response.json()
         count = 0
         for item in data: #inserts new items into db
@@ -130,7 +130,7 @@ class DataCog(commands.Cog, name='Data'):
         print(str(count) + ' Orders Updated')
 
     async def campaign_and_planet_data(self, session):
-        response = session.get("https://api.helldivers2.dev/api/v1/campaigns")
+        response = session.get("https://api.helldivers2.dev/api/v1/campaigns", timeout=10)
         data = response.json()
         campIDs = []
         for item in data:

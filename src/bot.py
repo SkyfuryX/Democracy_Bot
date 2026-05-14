@@ -1,5 +1,5 @@
 from functions import config
-import discord, sys, json
+import discord, sys, json, requests, ast
 from discord.ext import commands
 from azure.core import exceptions
 
@@ -33,9 +33,14 @@ class DemBot(commands.Bot):
 bot = DemBot(command_prefix='!', description=descrip, intents=intents)
                    
 if'--MOData'.lower() in sys.argv: #print MO Data from API call only, does not run
-    response = session.get("https://api.helldivers2.dev/api/v1/assignments")
-    print(json.dumps(response.json(), indent=2))
-    sys.exit()
+    with requests.Session() as sess: #seeing if this makes data updates more consistant
+        header = ast.literal_eval(config['HEADER'])
+        ast.literal_eval(config['HEADER'])
+        sess.headers.update(header)
+    
+        response = sess.get("https://api.helldivers2.dev/api/v1/assignments")
+        print(json.dumps(response.json(), indent=2))
+        sys.exit(0)
 elif '--test'.lower() in sys.argv: #starts bot using test token, omits Data Cog
     bot.run(bot_test_token)
 else:

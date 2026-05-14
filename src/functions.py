@@ -60,7 +60,7 @@ async def orders():
         header = ast.literal_eval(config['HEADER'])
         ast.literal_eval(config['HEADER'])
         sess.headers.update(header)
-        response = sess.get("https://api.helldivers2.dev/api/v1/assignments")
+        response = sess.get("https://api.helldivers2.dev/api/v1/assignments", timeout=10)
     try:
         if len(response.json()) == 0:
             msg = [discord.Embed(title='-Awaiting Orders from Super Earth-', type='rich')]
