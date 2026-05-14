@@ -1,8 +1,8 @@
-import re, math, discord, requests, ast, os
+import math, discord, ast
 from datetime import datetime as dt, timezone
 from dotenv import dotenv_values
-from azure.cosmos.aio import CosmosClient
 from database import db_query
+from aiohttp import ClientSession
 
 config = dotenv_values('./.env')
 
@@ -18,6 +18,8 @@ with open('./auto/stratlist.txt', 'r') as file:
 
 factions = {1:'Super Earth', 2: 'Terminids', 3:'Automatons', 4:'Illuminate'}
 difficulty = {1:'Trivial', 2:'Easy', 3:'Medium', 4:'Challenging', 5:'Hard', 6:'Extreme', 7:'Suicide Mission', 8:'Impossible', 9:'Helldive', 10:'Super Helldive'}
+
+session = ClientSession(headers=ast.literal_eval(config['HEADER']))
 
 #MISC FUNCTION
 async def commas(number):
@@ -56,11 +58,7 @@ async def war():
 
 #ValueTypes - 1:Faction, 3:Amount, 4:Enemy Type,  12: Planet
 async def orders():
-    with requests.Session() as sess: #seeing if this makes data updates more consistant
-        header = ast.literal_eval(config['HEADER'])
-        ast.literal_eval(config['HEADER'])
-        sess.headers.update(header)
-        response = sess.get("https://api.helldivers2.dev/api/v1/assignments", timeout=10)
+    response = await session.get("https://api.helldivers2.dev/api/v1/assignments")
     try:
         if len(response.json()) == 0:
             msg = [discord.Embed(title='-Awaiting Orders from Super Earth-', type='rich')]

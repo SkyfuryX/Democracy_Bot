@@ -1,9 +1,9 @@
-import discord, re, requests, ast
-from discord import app_commands
+import re,  aiohttp
 from discord.ext import commands, tasks
 from datetime import datetime as dt
+
 from database import db_query, db_upload, db_delete
-from functions import config
+
 
 class DataCog(commands.Cog, name='Data'):
     def __init__(self, bot):
@@ -24,18 +24,13 @@ class DataCog(commands.Cog, name='Data'):
         pass
            
     @tasks.loop(minutes=10)
-    async def primary_data(self):        
-        with requests.Session() as sess: #seeing if this makes data updates more consistant
-            header = ast.literal_eval(config['HEADER'])
-            ast.literal_eval(config['HEADER'])
-            sess.headers.update(header)
-            
-            print('10 min update started at '+ str(dt.now()))
-            await self.war_data(sess)
-            await self.dispatch_data(sess)
-            await self.orders_data(sess)
-            await self.campaign_and_planet_data(sess)
-            print('10 min update finished at '+ str(dt.now()))
+    async def primary_data(self):           
+        print('10 min update started at '+ str(dt.now()))
+        await self.war_data(self.bot.web_client)
+        await self.dispatch_data(self.bot.web_client)
+        await self.orders_data(self.bot.web_client)
+        await self.campaign_and_planet_data(self.bot.web_client)
+        print('10 min update finished at '+ str(dt.now()))
     
     @primary_data.before_loop
     async def before_upload_primary(self):
@@ -45,14 +40,9 @@ class DataCog(commands.Cog, name='Data'):
         
     @tasks.loop(minutes=60)
     async def secondary_data(self):
-        with requests.Session() as sess: #seeing if this makes data updates more consistant by closing out the session when done.
-            header = ast.literal_eval(config['HEADER'])
-            ast.literal_eval(config['HEADER'])
-            sess.headers.update(header)
-            
-            print('60 min update started at '+ str(dt.now()))
-            await self.planet_data(sess)
-            print('60 min update finished at '+ str(dt.now()))
+        print('60 min update started at '+ str(dt.now()))
+        await self.planet_data(self.bot.web_client)
+        print('60 min update finished at '+ str(dt.now()))
         
     @secondary_data.before_loop
     async def before_upload_secondary(self):
@@ -61,7 +51,7 @@ class DataCog(commands.Cog, name='Data'):
         print('Secondary Ready!')
         
 #DATA UPLOAD FUNCTIONS
-    async def war_data(self, session):
+    async def war_data(self, session:aiohttp.ClientSession):
         #gets only the highest ID for db key since the data doesnt have one itself
         results = await db_query('war_status', 'SELECT StringToNumber(c.id) as idint FROM c ORDER BY c.idint DESC OFFSET 0 LIMIT 1')
         id = results[0]['idint']
@@ -73,8 +63,8 @@ class DataCog(commands.Cog, name='Data'):
         data['id'] = str(id + 1)
         data['date'] = dt_formatted
 
-        response = session.get("https://api.helldivers2.dev/api/v1/war", timeout=10) #Overall War data
-        war_stats = response.json()
+        async with session.get("https://api.helldivers2.dev/api/v1/war") as response: #Overall War data
+            war_stats =  await response.json()
         war_stats = war_stats['statistics']
         war_stats = {key: value for key,value in war_stats.items() if key not in ['revives','timePlayed','accuracy',]}
         data.update(war_stats)
@@ -83,10 +73,9 @@ class DataCog(commands.Cog, name='Data'):
         print('1 War Update Recorded')
 
     #DISPATCH DATA
-    async def dispatch_data(self, session):
-        response = session.get("https://api.helldivers2.dev/api/v1/dispatches", timeout=10)
-        data = response.json()
-
+    async def dispatch_data(self, session:aiohttp.ClientSession):
+        async with session.get("https://api.helldivers2.dev/api/v1/dispatches") as response:
+            data = await response.json()
         #queries for last uploaded id
         results = await db_query('dispatch', 'SELECT d.id as id FROM dispatch d ORDER BY d.id DESC OFFSET 0 LIMIT 1')
         for item in results:
@@ -104,9 +93,9 @@ class DataCog(commands.Cog, name='Data'):
         print(str(count) + ' New Dispatches Recorded')
 
     #PLANET DATA
-    async def planet_data(self, session):
-        response = session.get("https://api.helldivers2.dev/api/v1/planets", timeout=10)
-        data = response.json()
+    async def planet_data(self, session:aiohttp.ClientSession):
+        async with session.get("https://api.helldivers2.dev/api/v1/planets") as response:
+            data = await response.json()
         data[107]['name'] = 'POPLI IX' #manual correction to prevent UTF-8 encoding errors
         count = 0
         for item in data: #inserts new items into db
@@ -116,9 +105,9 @@ class DataCog(commands.Cog, name='Data'):
         print(str(count) + ' Planets Updated')
 
     #ORDERS DATA
-    async def orders_data(self, session):
-        response = session.get("https://api.helldivers2.dev/api/v1/assignments", timeout=10)
-        data = response.json()
+    async def orders_data(self, session:aiohttp.ClientSession):
+        async with session.get("https://api.helldivers2.dev/api/v1/assignments") as response:
+            data = await response.json()
         count = 0
         for item in data: #inserts new items into db
             item['id'] = str(item['id'])
@@ -129,9 +118,9 @@ class DataCog(commands.Cog, name='Data'):
             await db_upload('major_orders', data, 0)
         print(str(count) + ' Orders Updated')
 
-    async def campaign_and_planet_data(self, session):
-        response = session.get("https://api.helldivers2.dev/api/v1/campaigns", timeout=10)
-        data = response.json()
+    async def campaign_and_planet_data(self, session:aiohttp.ClientSession):
+        async with session.get("https://api.helldivers2.dev/api/v1/campaigns") as response:
+            data = await response.json()
         campIDs = []
         for item in data:
             campIDs.append(str(item['id']))
