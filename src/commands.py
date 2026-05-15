@@ -72,7 +72,7 @@ class CommandCog(commands.Cog, name="Commands"):
     async def orders(self, interaction: discord.Interaction, public: bool=False):
         await interaction.response.defer(ephemeral=not public, thinking=True)
         self.usage["orders"] += 1
-        msg = await orders()
+        msg = await orders(self.bot.web_client)
         await interaction.followup.send(embeds=msg)
 
     @app_commands.command(name='dispatch', description='Displays the [number] most recent dispatch message(s) from Super Earth. Defaults to 1, max 10')
@@ -170,7 +170,8 @@ class CommandCog(commands.Cog, name="Commands"):
     @commands.command(hidden=True)
     async def shutdown(self, ctx):
         if ctx.author.id == 157695574580264960: 
-            await self.close()
+            await self.bot.web_client.close()
+            await self.bot.close()
             
     @commands.command(hidden=True)
     async def sync(self, ctx):

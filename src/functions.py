@@ -57,18 +57,14 @@ async def war():
     return msg
 
 #ValueTypes - 1:Faction, 3:Amount, 4:Enemy Type,  12: Planet
-async def orders():
-    response = await session.get("https://api.helldivers2.dev/api/v1/assignments")
-    try:
-        if len(response.json()) == 0:
-            msg = [discord.Embed(title='-Awaiting Orders from Super Earth-', type='rich')]
-            return msg
-    except:
-        pass #if the response is empty, pass to avoid errors:
-    try:
-        query= f'SELECT o.title, o.briefing, o.description, o.expiration, o.tasks, o.progress FROM major_orders o ORDER BY o._ts DESC OFFSET 0 LIMIT {len(response.json())}'
-    except:
-        query= 'SELECT o.title, o.briefing, o.description, o.expiration, o.tasks, o.progress FROM major_orders o ORDER BY o._ts DESC OFFSET 0 LIMIT 1'
+async def orders(session):
+    async with session.get("https://api.helldivers2.dev/api/v1/assignments") as response:
+        data = await response.json()
+    if len(data) == 0:
+        msg = [discord.Embed(title='-Awaiting Orders from Super Earth-', type='rich')]
+        return msg
+
+    query= f'SELECT o.title, o.briefing, o.description, o.expiration, o.tasks, o.progress FROM major_orders o ORDER BY o._ts DESC OFFSET 0 LIMIT {len(data)}'
     orders = await db_query('major_orders', query)
     msg = []
     for order in orders:

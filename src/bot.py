@@ -23,7 +23,7 @@ class DemBot(commands.Bot):
         
     async def setup_hook(self):
         if '--test' in sys.argv:
-            pass
+            await self.add_cog(CommandCog(self))
         else:
             await self.add_cog(DataCog(self))
             await self.add_cog(CommandCog(self))
@@ -56,5 +56,5 @@ async def main():
                 await bot.start(bot_test_token)
             else:
                 await bot.start(token) #starts bot
-            
-asyncio.run(main())                  
+           
+asyncio.run(main())
