@@ -18,12 +18,9 @@ class Stats(HelldiversBase):
     illuminate_kills: int
     bullets_fired:int
     bullets_hit: int
-    timePlayed: int
     deaths: int
-    revives: int
     friendlies: int
     mission_success_rate: int
-    accuracy: int
     player_count: int 
         
     async def killsCombined(self):

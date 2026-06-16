@@ -1,6 +1,7 @@
 import math, discord, ast
 from datetime import datetime as dt, timezone
 from dotenv import dotenv_values
+from classes import Planet, Stats
 from database import db_query
 from aiohttp import ClientSession
 
@@ -41,19 +42,20 @@ async def commas(number):
 async def war():
     query='SELECT * FROM war_status w ORDER BY w._ts DESC OFFSET 0 LIMIT 1'
     results = await db_query('war_status', query)
-    war = results[0]
+    
+    war = Stats.model_validate(results[0])
     msg = discord.Embed(title='**--Galactic War--**', type='rich')
-    msg.add_field(name='Helldivers Active:', value=await commas(war['playerCount']))
-    msg.add_field(name='Successful Missions:', value=await commas(war['missionsWon']))
-    msg.add_field(name='Failed Missions:', value=await commas(war['missionsLost']))
-    msg.add_field(name='Bullets Fired:', value=await commas(war['bulletsFired']))
-    msg.add_field(name='Helldivers KIA:', value=await commas(war['deaths']), )
-    msg.add_field(name='Accidentals:', value=await commas(war['friendlies']))
+    msg.add_field(name='Helldivers Active:', value=await commas(war.player_count))
+    msg.add_field(name='Successful Missions:', value=await commas(war.missions_won))
+    msg.add_field(name='Failed Missions:', value=await commas(war.missions_lost))
+    msg.add_field(name='Bullets Fired:', value=await commas(war.bullets_fired))
+    msg.add_field(name='Helldivers KIA:', value=await commas(war.deaths))
+    msg.add_field(name='Accidentals:', value=await commas(war.friendlies))
     msg.add_field(name='', value='', inline=False)
     msg.add_field(name='-Enemies Liberated-', value='',inline=False)
-    msg.add_field(name='Automatons:', value=await commas(war['automatonKills']))
-    msg.add_field(name='Terminids:', value=await commas(war['terminidKills']))
-    msg.add_field(name='Illuminate:', value=await commas(war['illuminateKills']))
+    msg.add_field(name='Automatons:', value=await commas(war.automaton_kills))
+    msg.add_field(name='Terminids:', value=await commas(war.terminid_kills))
+    msg.add_field(name='Illuminate:', value=await commas(war.illuminate_kills))
     return msg
 
 #ValueTypes - 1:Faction, 3:Amount, 4:Enemy Type,  12: Planet
@@ -199,41 +201,40 @@ async def orders(session):
 async def planet(name):
     query= f'SELECT * FROM planets p WHERE p.name ="{name}"'
     results = await db_query('planets', query)
-    for item in results:
-        if item['currentOwner'] == 'Humans':
-            item['currentOwner'] = 'Super Earth'
-        stats = item['statistics']
-        stats['enemiesKilled'] = stats['illuminateKills']+stats['automatonKills']+stats['terminidKills']
-        #msg = discord.Embed(title='**--'+item['name']+'--**', description= item['currentOwner']+' Control', type='rich')
-        #msg = '**--'+item['name']+'--** \n'+item['currentOwner']+' Control'
-        if item['currentOwner'] == 'Super Earth' and (item['health']/item['maxHealth']) == 1 and item['event'] == None:
-            msg = discord.Embed(title='**--'+item['name']+'--**', description= item['currentOwner']+' Control\n100% Liberated', type='rich')
-        elif item['currentOwner'] == 'Super Earth' and (item['health']/item['maxHealth']) == 1 and len(item['event']) > 0:
-            event = item['event']
-            msg = discord.Embed(title='**--'+item['name']+'--**', description= item['currentOwner']+' Control\n'+str(abs(round((event['health']/event['maxHealth'] -1)*100, 4))) + '% Defended', type='rich')
-        else:
-            msg = discord.Embed(title='**--'+item['name']+'--**', description= item['currentOwner']+' Control\n'+str(abs(round((item['health']/item['maxHealth'] -1)*100, 4))) + '% Liberated', type='rich')
-        msg.add_field(name='Sector:', value=item['sector'])
-        if len(item['hazards']) > 1:
-            msg.add_field(name='Biome and Hazards:', value=item['biome']['name']+' - '+ item['hazards'][0]['name'] + ', '+ item['hazards'][1]['name'])
-        else:
-            msg.add_field(name='Biome and Hazards:', value=item['biome']['name']+' - '+ item['hazards'][0]['name'])
-        query2='SELECT p.name FROM planets p WHERE p.id IN ("'+ '","'.join(str(x) for x in item['waypoints'])  +'")'
-        planetlst = await db_query('planets', query2)
-        if len(planetlst) > 0:
-            msg.add_field(name='Supply Lines:', value=', '.join(x['name'] for x in planetlst))
-        else:
-            msg.add_field(name ='', value='')
-        msg.add_field(name='----------------------------------', value='', inline= False)
-        msg.add_field(name='Helldivers Active:', value=await commas(stats['playerCount']))
-        msg.add_field(name='Bullets Fired:', value=await commas(stats['bulletsFired']))
-        msg.add_field(name='', value='')
-        msg.add_field(name='Helldivers KIA:', value=await commas(stats['deaths']), )
-        msg.add_field(name='Enemies Liberated:', value=await commas(stats['enemiesKilled']))
-        msg.add_field(name='', value='')
+    if len(results) == 0:
+        msg = discord.Embed(title='-Planet Not Found-', type='rich')
         return msg
-    msg = discord.Embed(title='-Planet Not Found-', type='rich')
+    
+    planet = Planet.model_validate(results[0])
+    if planet.current_owner == 'Humans':
+        planet.current_owner = 'Super Earth'
+    
+    if planet.current_owner == 'Super Earth' and await planet.currentHealth == 1.0 and planet.event == None:
+        msg = discord.Embed(title=f'**--{planet.name}--**', description= f'{planet.current_owner} Control\n100% Liberated', type='rich')
+    elif planet.current_owner == 'Super Earth' and  await planet.currentHealth() == 1.0 and len(planet.event) > 0:
+        event = planet.event
+        msg = discord.Embed(title=f'**--{planet.name}--**', description= f'{planet.current_owner} Control\n{abs(round((await event.currentHealth() -1)*100, 4))}% Defended', type='rich')
+    else:
+        msg = discord.Embed(title=f'**--{planet.name}--**', description= f'{planet.current_owner} Control\n{abs(round((await planet.currentHealth() -1)*100, 4))}% Liberated', type='rich')
+    
+    msg.add_field(name='Sector:', value=planet.sector)
+    msg.add_field(name='Biome and Hazards:', value= f'{planet.biome.name} - {', '.join(hazard.name for hazard in planet.hazards)}')
+
+    if len(planet.waypoints) > 0:
+        msg.add_field(name='Supply Lines:', value=', '.join(planetlist[x] for x in planet.waypoints))
+    else:
+        msg.add_field(name ='', value='')
+        
+    stats = planet.statistics
+    msg.add_field(name='----------------------------------', value='', inline= False)
+    msg.add_field(name='Helldivers Active:', value=await commas(stats.player_count))
+    msg.add_field(name='Bullets Fired:', value=await commas(stats.bullets_fired))
+    msg.add_field(name='', value='')
+    msg.add_field(name='Helldivers KIA:', value=await commas(stats.deaths))
+    msg.add_field(name='Enemies Liberated:', value=await commas(await stats.killsCombined()))
+    msg.add_field(name='', value='')
     return msg
+    
 
 async def campaigns():
     autodef = [] #Automaton Defense campaigns
