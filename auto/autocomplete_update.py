@@ -7,16 +7,7 @@ from dotenv import dotenv_values
 
 #https://helldivers-2.github.io/api/docs/openapi/swagger-ui.html
 
-config = dotenv_values('../.env')
-data = {}
-session = requests.Session()
-header = ast.literal_eval(config['HEADER'])
-session.headers.update(header)
-
-
-
-config = dotenv_values('../.env')
-#load_dotenv(encoding="latin-1") #loads environment variables from .env file
+config = dotenv_values('./.env')
 data = {}
 session = requests.Session()
 header = ast.literal_eval(config['HEADER'])
@@ -51,11 +42,11 @@ sector_list = ', '.join(sector_list)
 planet_list = ', '.join(planet_list)
 # strat_list = ', '.join(strat_list)
     
-with open('../auto/planetlist.txt', 'w') as file:
+with open('./auto/planetlist.txt', 'w') as file:
     file.write(planet_list)
     file.close()
     
-with open('../auto/sectorlist.txt', 'w') as file:
+with open('./auto/sectorlist.txt', 'w') as file:
     file.write(sector_list)
     file.close()
     
