@@ -6,6 +6,8 @@ class HelldiversBase(BaseModel):
     model_config = ConfigDict(
         alias_generator=to_camel,
         populate_by_name=True,
+        extra='ignore',
+        defer_build=True,
     ) 
 
 #General Statistics   
@@ -23,19 +25,21 @@ class Stats(HelldiversBase):
     mission_success_rate: int
     player_count: int 
         
-    async def killsCombined(self):
+    def killsCombined(self):
         return self.terminid_kills + self.automaton_kills + self.illuminate_kills
 
 #Planet Classes    
 class Biome(HelldiversBase):
     name: str
-    description: str
+    description: Optional[str] = None
 
 class Location(HelldiversBase):
-    health: int
     max_health: int
+    health: int
         
-    async def currentHealth(self):
+    def currentHealth(self) -> float:
+        if not self.max_health:
+            return 0.0
         return round(self.health / self.max_health, 4)
 
 class Event(Location):
@@ -46,12 +50,12 @@ class Event(Location):
     campaign_id: int
     joint_operation_ids: Optional[list[int]] = None
 
-
+    
 class Position(HelldiversBase):
     x: float
     y: float
 
-class Region(HelldiversBase):
+class Region(Location):
     id: int
     hash: int
     name:str
@@ -82,7 +86,7 @@ class Planet(Location):
     statistics: Stats
     attacking: list[int]
     regions:  list[Region]
-    id: str
+    id: Optional[str] = None
         
     def __str__(self):
         return f"Planet({self.name})"
