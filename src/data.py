@@ -1,4 +1,4 @@
-import re,  aiohttp
+import re, aiohttp
 from discord.ext import commands, tasks
 from datetime import datetime as dt
 
