@@ -1,4 +1,4 @@
-from aiohttp import ClientSession
+from aiohttp import ClientSession, ClientTimeout
 import asyncio
 from functions import config
 import discord, sys, json, ast
@@ -37,7 +37,8 @@ class DemBot(commands.Bot):
         await self.change_presence(activity=discord.CustomActivity(name='Spreading Managed Democracy'))           
 
 async def main():
-    async with ClientSession(headers=ast.literal_eval(config['HEADER'])) as our_client:
+    timeout = ClientTimeout(total=10)
+    async with ClientSession(headers=ast.literal_eval(config['HEADER']), timeout=timeout) as our_client:
         
         intents = discord.Intents.default()
         descrip = '''A discord bot to view on-demand statistics from the game Helldivers 2. Includes Planet info, Major Orders, Dispatches from Super Earth, and more.\n/report for bugs or feature requests.\nDiscord Contact: @sky.fury'''
