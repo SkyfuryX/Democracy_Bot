@@ -7,16 +7,7 @@ from dotenv import dotenv_values
 
 #https://helldivers-2.github.io/api/docs/openapi/swagger-ui.html
 
-config = dotenv_values('../.env')
-data = {}
-session = requests.Session()
-header = ast.literal_eval(config['HEADER'])
-session.headers.update(header)
-
-
-
-config = dotenv_values('../.env')
-#load_dotenv(encoding="latin-1") #loads environment variables from .env file
+config = dotenv_values('./.env')
 data = {}
 session = requests.Session()
 header = ast.literal_eval(config['HEADER'])
@@ -37,28 +28,28 @@ for item in data:
 # url = "https://api-hellhub-collective.koyeb.app/api/stratagems"
 # payload={}
 # headers={}
-# response =  requests.request("GET", url, headers=headers).json()
+# # response =  requests.request("GET", url, headers=headers).json()
 
 # response = session.get("https://api-hellhub-collective.koyeb.app/api/stratagems")
 # stratcount = response['pagination']['total']
      
 # count = 0
 # for i in range(1, stratcount+1): 
-#     stratagem = requests.request("GET", f"https://api-hellhub-collective.koyeb.app/api/stratagems/{i}")
+#     stratagem = session.get(f"https://api-hellhub-collective.koyeb.app/api/stratagems/{i}")
 #     strat_list.append(stratagem['data']['name'])
         
 sector_list = ', '.join(sector_list)
 planet_list = ', '.join(planet_list)
-# strat_list = ', '.join(strat_list)
+strat_list = ', '.join(strat_list)
     
-with open('../auto/planetlist.txt', 'w') as file:
+with open('./auto/planetlist.txt', 'w') as file:
     file.write(planet_list)
     file.close()
     
-with open('../auto/sectorlist.txt', 'w') as file:
+with open('./auto/sectorlist.txt', 'w') as file:
     file.write(sector_list)
     file.close()
     
-# with open('../stratlist.txt', 'w') as file:
+# with open('./stratlist.txt', 'w') as file:
 #     file.write(strat_list)
 #     file.close()
